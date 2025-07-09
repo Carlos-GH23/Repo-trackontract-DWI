@@ -1,7 +1,7 @@
 package com.example.integradora_trackontract.auth.service;
 
-import com.example.integradora_trackontract.User.model.User;
-import com.example.integradora_trackontract.User.model.UserRepository;
+import com.example.integradora_trackontract.modules.User.model.User;
+import com.example.integradora_trackontract.modules.User.model.UserRepository;
 import com.example.integradora_trackontract.auth.controller.LoginRequest;
 import com.example.integradora_trackontract.auth.controller.RegisterRequest;
 import com.example.integradora_trackontract.auth.controller.TokenResponse;

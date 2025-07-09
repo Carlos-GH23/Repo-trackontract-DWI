@@ -1,7 +1,7 @@
 package com.example.integradora_trackontract.config;
 
-import com.example.integradora_trackontract.User.model.User;
-import com.example.integradora_trackontract.User.model.UserRepository;
+import com.example.integradora_trackontract.modules.User.model.User;
+import com.example.integradora_trackontract.modules.User.model.UserRepository;
 import com.example.integradora_trackontract.auth.repository.Token;
 import com.example.integradora_trackontract.auth.repository.TokenRespository;
 import com.example.integradora_trackontract.auth.service.JwtService;
@@ -16,7 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;

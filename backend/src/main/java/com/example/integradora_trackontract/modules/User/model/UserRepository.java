@@ -1,4 +1,4 @@
-package com.example.integradora_trackontract.User.model;
+package com.example.integradora_trackontract.modules.User.model;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

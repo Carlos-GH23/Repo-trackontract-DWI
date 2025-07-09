@@ -1,7 +1,7 @@
 package com.example.integradora_trackontract.config;
 
-import com.example.integradora_trackontract.User.model.User;
-import com.example.integradora_trackontract.User.model.UserRepository;
+import com.example.integradora_trackontract.modules.User.model.User;
+import com.example.integradora_trackontract.modules.User.model.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
