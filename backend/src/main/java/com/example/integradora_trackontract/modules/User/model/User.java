@@ -1,4 +1,4 @@
-package com.example.integradora_trackontract.User.model;
+package com.example.integradora_trackontract.modules.User.model;
 
 import com.example.integradora_trackontract.auth.repository.Token;
 import jakarta.persistence.*;

@@ -1,6 +1,6 @@
 package com.example.integradora_trackontract.auth.repository;
 
-import com.example.integradora_trackontract.User.model.User;
+import com.example.integradora_trackontract.modules.User.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 

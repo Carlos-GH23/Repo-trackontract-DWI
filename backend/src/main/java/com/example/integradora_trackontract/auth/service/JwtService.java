@@ -1,6 +1,6 @@
 package com.example.integradora_trackontract.auth.service;
 
-import com.example.integradora_trackontract.User.model.User;
+import com.example.integradora_trackontract.modules.User.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
