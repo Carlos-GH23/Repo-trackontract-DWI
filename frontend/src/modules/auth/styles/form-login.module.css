@@ -1,0 +1,222 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  width: 100vw; /* que ocupe toda la pantalla horizontal */
+  overflow-x: hidden; /* evitar scroll horizontal */
+}
+
+.leftPanel {
+  flex: 0 0 40%; /* ocupa 40% del ancho fijo */
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem; /* un poco más de padding para PC */
+  color: white;
+  min-height: 100vh; /* para que ocupe toda la altura */
+  box-sizing: border-box;
+}
+
+.logoContainer {
+  text-align: center;
+}
+
+.logoWrapper {
+  margin-bottom: 2rem;
+}
+
+.shield {
+  position: relative;
+  margin: 0 auto 1rem;
+  width: 8rem;
+  height: 8rem;
+  border: 4px solid white;
+  border-radius: 0.75rem;
+  transform: rotate(12deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.scales {
+  display: flex;
+  justify-content: center;
+  color: white;
+}
+
+.brandName {
+  font-size: 2.5rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.rightPanel {
+  flex: 0 0 60%;
+  background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+
+.form {
+  width: 100%;
+  max-width: 28rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  text-align: center;
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  color: #6b7280;
+  text-align: center;
+  margin: 0 0 2rem 0;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.input {
+  width: 100%;
+  height: 3rem;
+  padding: 0 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+.passwordInputGroup {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passwordToggle:hover {
+  color: #374151;
+}
+
+.submitButton {
+  width: 100%;
+  height: 3rem;
+  background: #14b8a6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  margin-bottom: 1.5rem;
+}
+
+.submitButton:hover {
+  background: #0f766e;
+}
+
+.submitButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.3);
+}
+
+.linksContainer {
+  text-align: center;
+}
+
+.link {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.15s ease-in-out;
+}
+
+.link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.signupText {
+  margin: 1rem 0 0 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    width: 100vw;
+  }
+
+  .leftPanel {
+    flex: none;
+    width: 100%;
+    min-height: 40vh;
+    padding: 1rem;
+  }
+
+  .brandName {
+    font-size: 2rem;
+  }
+
+  .rightPanel {
+    flex: none;
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .form {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+}
