@@ -10,19 +10,19 @@ export default function RegistroContrato() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-white p-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center mb-8">
           <button
             onClick={volverAContratos}
-            className="mr-4 p-2 hover:bg-gray-200 rounded-lg transition-colors duration-200 flex items-center justify-center"
+            className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-center shadow-sm"
           >
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-lg mr-4">
+            <div className="bg-blue-100 p-3 rounded-lg mr-4 shadow-sm">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -34,16 +34,16 @@ export default function RegistroContrato() {
           </div>
         </div>
 
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 shadow">
           <p className="text-sm text-red-700">
             Completa todos los campos para registrar un nuevo contrato en el sistema *
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border-2 border-blue-300 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-2xl border border-blue-200 overflow-hidden">
           <div className="bg-blue-50 px-6 py-4 border-b border-blue-200">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3 shadow-sm">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -59,14 +59,14 @@ export default function RegistroContrato() {
                 <input
                   type="text"
                   placeholder="Contrato de Servicios Profesionales 2025"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
                 <select
-                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
                 >
                   <option>Seleccione un cliente</option>
                   <option>Empresa ABC S.A. de C.V.</option>
@@ -79,7 +79,7 @@ export default function RegistroContrato() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
                 <select
-                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
                 >
                   <option>Seleccione una categoría</option>
                   <option>Servicios Profesionales</option>
@@ -91,7 +91,7 @@ export default function RegistroContrato() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Vencimiento *</label>
                 <input
                   type="date"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 />
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function RegistroContrato() {
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-2 ml-15">Contrato {habilitado ? "activo" : "inactivo"}</p>
+              <p className="text-xs text-gray-500 mt-2">Contrato {habilitado ? "activo" : "inactivo"}</p>
             </div>
 
             <div>
@@ -122,7 +122,7 @@ export default function RegistroContrato() {
               <textarea
                 rows={5}
                 placeholder="Describe detalladamente el contrato..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none shadow-sm"
               />
             </div>
           </div>
@@ -131,11 +131,11 @@ export default function RegistroContrato() {
         <div className="flex justify-end space-x-4 mt-8">
           <button
             onClick={volverAContratos}
-            className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+            className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium shadow"
           >
             Cancelar
           </button>
-          <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2">
+          <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2 shadow-md">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
