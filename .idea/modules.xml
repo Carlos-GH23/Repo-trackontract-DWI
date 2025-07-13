@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Repo-trackontract-DWI.iml" filepath="$PROJECT_DIR$/.idea/Repo-trackontract-DWI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/backend/integradora_trackontract.iml" filepath="$PROJECT_DIR$/backend/integradora_trackontract.iml" />
     </modules>
   </component>
 </project>
