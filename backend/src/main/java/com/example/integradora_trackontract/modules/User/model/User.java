@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -35,8 +36,8 @@ public class User {
     @Column(name = "email", columnDefinition = "VARCHAR(100)", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "phone", columnDefinition = "VARCHAR(15)", nullable = false)
-    private String phone;
+    @Column(name = "phoneNumber", columnDefinition = "VARCHAR(15)", nullable = false)
+    private String phoneNumber;
 
     @Column(name = "password", columnDefinition = "VARCHAR(255)", nullable = false)
     private String password;
@@ -45,10 +46,10 @@ public class User {
     private boolean status;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private String created_at;
+    private LocalDateTime  created_at;
 
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private String updated_at;
+    private LocalDateTime updated_at;
 
     @Column(name = "login_attempts", columnDefinition = "INT DEFAULT 0")
     private int login_attempts;
