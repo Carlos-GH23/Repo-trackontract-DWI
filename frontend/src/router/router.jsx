@@ -5,6 +5,8 @@ import Contratos from "../modules/admin/views/Contratos"
 import RegistroContrato from "../modules/admin/components/registro_contrato"
 import Categorias from "../modules/admin/views/Categorias"
 import RegistroCategoria from "../modules/admin/components/registro_categoria"
+import Usuarios from "../modules/admin/views/Usuarios"
+
 
 
 
@@ -21,6 +23,9 @@ const AppRouter = () => {
           <Route path="contratos/add" element={<RegistroContrato />} />
           <Route path="categorias" element={<Categorias />} />
           <Route path="categorias/add" element={<RegistroCategoria />} />
+          <Route path="usuarios" element={<Usuarios />} />
+
+
 
 
 
