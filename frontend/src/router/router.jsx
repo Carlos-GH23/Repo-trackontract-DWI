@@ -3,6 +3,8 @@ import Login from "../modules/auth/views/Login";
 import LayoutAdmin from "../modules/admin/components/layout/layoutAdmin"
 import Contratos from "../modules/admin/views/Contratos"
 import RegistroContrato from "../modules/admin/components/registro_contrato"
+import Categorias from "../modules/admin/views/Categorias"
+import RegistroCategoria from "../modules/admin/components/registro_categoria"
 
 
 
@@ -17,6 +19,8 @@ const AppRouter = () => {
 
           <Route path="contratos" element={<Contratos />} />
           <Route path="contratos/add" element={<RegistroContrato />} />
+          <Route path="categorias" element={<Categorias />} />
+          <Route path="categorias/add" element={<RegistroCategoria />} />
 
 
 
