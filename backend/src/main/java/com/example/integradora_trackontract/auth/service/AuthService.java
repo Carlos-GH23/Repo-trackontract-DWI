@@ -29,6 +29,12 @@ public class AuthService {
         var user = User.builder()
                 .name(request.name())
                 .email(request.email())
+                .lastName(request.lastName())
+                .phoneNumber(request.phoneNumber())
+                .status(request.status() != null ? request.status() : true)
+                .created_at(request.createdAt() != null ? request.createdAt().toLocalDateTime() : null)
+                .updated_at(request.updatedAt() != null ? request.updatedAt().toLocalDateTime() : null)
+                .login_attempts(0)
                 .password(passwordEncoder.encode(request.password()))
                 .build();
         var savedUser = userRepository.save(user);
