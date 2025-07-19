@@ -108,13 +108,12 @@ export default function RegistroContrato() {
                   />
                 </div>
                 <div className="flex items-center">
-                  <div className={`w-3 h-3 rounded-full mr-2 ${habilitado ? "bg-green-500" : "bg-gray-400"}`} />
                   <span className="text-sm font-medium text-gray-700">
-                    {habilitado ? "Contrato Habilitado" : "Contrato Inhabilitado"}
+                    {habilitado ? "Habilitado" : "Inhabilitado"}
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">Contrato {habilitado ? "activo" : "inactivo"}</p>
+              
             </div>
 
             <div>

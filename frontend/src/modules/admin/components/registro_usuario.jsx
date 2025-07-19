@@ -93,7 +93,7 @@ export default function RegistroUsuario() {
                   type="button"
                   onClick={() => setUsuarioActivo(!usuarioActivo)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                    usuarioActivo ? "bg-blue-600" : "bg-gray-300"
+                    usuarioActivo ? "bg-green-600" : "bg-gray-300"
                   }`}
                 >
                   <span
