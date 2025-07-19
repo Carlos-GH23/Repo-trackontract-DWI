@@ -7,6 +7,7 @@ import Categorias from "../modules/admin/views/Categorias"
 import RegistroCategoria from "../modules/admin/components/registro_categoria"
 import Usuarios from "../modules/admin/views/Usuarios"
 import RegistroUsuario from "../modules/admin/components/registro_usuario"
+import EditarUsuario from "../modules/admin/components/editar_usuario"
 
 
 
@@ -26,6 +27,8 @@ const AppRouter = () => {
           <Route path="categorias/add" element={<RegistroCategoria />} />
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="usuarios/add" element={<RegistroUsuario />} />
+          <Route path="usuarios/edit/:id" element={<EditarUsuario />} />
+
 
 
 
