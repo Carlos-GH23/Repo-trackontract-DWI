@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa"
 import { Link } from "react-router-dom"
 
@@ -86,12 +85,15 @@ export default function Categorias() {
                 >
                   <FaEye />
                 </button>
-                <button
+
+                <Link
+                  to={`/admin/categorias/edit/${idx}`}
+                  className="p-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg flex items-center justify-center"
                   title="Editar"
-                  className="p-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg"
                 >
                   <FaEdit />
-                </button>
+                </Link>
+
                 <button
                   title="Eliminar"
                   className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
