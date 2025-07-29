@@ -1,5 +1,4 @@
-import React from "react"
-import { useState } from "react"
+import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import styles from "../styles/form-login.module.css"
 
@@ -7,8 +6,21 @@ const FormLogin = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [token, setToken] = useState('')
+  const [user, setUser] = useState(null)
 
-  const handleSubmit = () => {
+  const handleSubmitPass = () => {
+    if (email) {
+      setIsSubmitted(true)
+      // Aquí puedes agregar la lógica para enviar el email
+      console.log('Enviando enlace de recuperación a:', email)
+    }
+  }
+
+
+  const handleSubmit = (e) => {
     e.preventDefault()
     console.log("Login attempt:", { email, password })
   }
@@ -17,23 +29,16 @@ const FormLogin = () => {
     setShowPassword(!showPassword)
   }
 
+  const handleOpenModal = () => setShowModal(true)
+  const handleCloseModal = () => setShowModal(false)
+
   return (
     <div className={styles.container}>
       <div className={styles.leftPanel}>
         <div className={styles.logoContainer}>
           <div className={styles.logoWrapper}>
             <div className={styles.shield}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -41,17 +46,7 @@ const FormLogin = () => {
               </svg>
             </div>
             <div className={styles.scales}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 11V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v8" />
                 <path d="M8 21h8" />
                 <path d="M12 17v4" />
@@ -70,9 +65,7 @@ const FormLogin = () => {
           <p className={styles.subtitle}>Inicia sesión con tu cuenta</p>
 
           <div className={styles.formGroup}>
-            <label htmlFor="email" className={styles.label}>
-              Correo electrónico
-            </label>
+            <label htmlFor="email" className={styles.label}>Correo electrónico</label>
             <input
               type="email"
               id="email"
@@ -85,9 +78,7 @@ const FormLogin = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="password" className={styles.label}>
-              Contraseña
-            </label>
+            <label htmlFor="password" className={styles.label}>Contraseña</label>
             <div className={styles.passwordInputGroup}>
               <input
                 type={showPassword ? "text" : "password"}
@@ -100,32 +91,12 @@ const FormLogin = () => {
               />
               <button type="button" className={styles.passwordToggle} onClick={togglePasswordVisibility}>
                 {showPassword ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
@@ -134,17 +105,92 @@ const FormLogin = () => {
             </div>
           </div>
 
-          <button type="submit" className={styles.submitButton}>
-            Iniciar Sesión
-          </button>
+          <button type="submit" className={styles.submitButton}>Iniciar Sesión</button>
 
           <div className={styles.linksContainer}>
-            <Link to="/forgot-password" className={styles.link}>
+            <button type="button" onClick={handleOpenModal} className={styles.link}>
               ¿Olvidaste tu contraseña?
-            </Link>
+            </button>
           </div>
         </form>
       </div>
+
+      {/* Modal de recuperación de contraseña */}
+      {showModal && (
+      <div className={styles.modalOverlay}>
+      <div className={styles.modalContent}>
+
+        <button 
+          onClick={handleCloseModal}
+          className={styles.modalbtnX}
+        >
+          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="4">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            Recuperar Contraseña
+          </h2>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            Ingresa tu correo electrónico y te enviaremos un<br />
+            enlace para restablecer tu contraseña
+          </p>
+        </div>
+
+        {!isSubmitted ? (
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="email" className={styles.label}>Correo electrónico</label>
+              <div className="relative">
+                <input
+                  icon="email"
+                  type="email"
+                  id="email"
+                  className={styles.input}
+                  placeholder="Correo electrónico"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleSubmitPass}
+              className={styles.submitButtonPass}>
+              Enviar enlace de recuperación
+            </button>
+          </div>
+        ) : (
+          <div className="text-center space-y-4">
+          
+            <h3 className="text-xl font-semibold text-gray-900">
+              ¡Enlace Enviado!
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Hemos enviado un enlace de recuperación a:<br />
+              <span className="font-medium">{email}</span>
+            </p>
+            <button
+              onClick={() => setIsSubmitted(false)}
+              className={styles.submitButtonPass}>
+              Enviar nuevamente
+            </button>
+          </div>
+        )}
+
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500 ">
+            Si no recibes el correo en unos minutos, revisa tu carpeta de spam o correo no deseado
+          </p>
+        </div>
+      </div>
+    </div>
+)}
+
     </div>
   )
 }
