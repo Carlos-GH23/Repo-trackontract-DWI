@@ -9,6 +9,8 @@ import com.example.integradora_trackontract.auth.repository.Token;
 import com.example.integradora_trackontract.auth.repository.TokenRespository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,14 +47,47 @@ public class AuthService {
     }
 
     public TokenResponse login(LoginRequest request){
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                )
-        );
-        var user = userRepository.findByEmail(request.email())
-                .orElseThrow();
+        //Recuperar el usuario
+        User user = userRepository.findByEmail(request.email())
+                        .orElseThrow(() -> new UsernameNotFoundException("No existe usuario con email " + request.email()));
+
+        //Mandar LockedException cuando esté bloqueado
+        if (!user.isStatus()) {
+            throw new LockedException("Cuenta bloqueada por exceder el número de intentos.");
+        }
+
+        try {
+            //Se intenta autentificar
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    )
+            );
+        } catch (BadCredentialsException ex) {
+            // incrementar intentos
+            int intentos = user.getLogin_attempts() + 1;
+            user.setLogin_attempts(intentos);
+
+            // bloquear al llegar a 3
+            if (intentos >= 3){
+                user.setStatus(false);
+            }
+            userRepository.save(user);
+
+            // Rejected por credenciales o account locked (si alcanzó 3)
+            if (!user.isStatus()){
+                throw new LockedException("Cuenta bloqueada por 3 intentos fallidos");
+            }
+            throw ex;
+        }
+
+        // si autenticacion exitosa: reiniciamos contador de intentos
+        if (user.getLogin_attempts() > 0){
+            user.setLogin_attempts(0);
+            userRepository.save(user);
+        }
+
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
