@@ -42,7 +42,7 @@ public class CategoriesService {
         List<Categories> categories = categoriesRepository.findAll();
         logger.info("La búsqueda ha sido realizada correctamente");
         if(categories.isEmpty()) {
-            return new ResponseEntity<>(new Message("No hay categorias registradas", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new Message("No hay categorias registradas", TypesResponse.WARNING), HttpStatus.OK);
         }
         logger.info("Listado de categorias obtenido correctamente");
 
