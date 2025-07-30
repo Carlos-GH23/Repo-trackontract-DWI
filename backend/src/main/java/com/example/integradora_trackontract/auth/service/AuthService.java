@@ -77,7 +77,7 @@ public class AuthService {
 
             // Rejected por credenciales o account locked (si alcanzó 3)
             if (!user.isStatus()){
-                throw new LockedException("Cuenta bloqueada por 3 intentos fallidos");
+                throw new LockedException("Cuenta bloqueada por 3 intentos fallidos (Durante 30 minutos)");
             }
             throw ex;
         }
