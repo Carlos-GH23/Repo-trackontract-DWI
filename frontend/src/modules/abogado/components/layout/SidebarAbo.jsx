@@ -5,10 +5,8 @@ const SidebarAbo = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
 
     const links = [
-        { to: "/abogado/contratos", label: "Contratos", icon: <FaFileContract /> },
-        { to: "/abogado/categorias", label: "Usuarios", icon: <FaUsers /> },
-        { to: "/abogado/categorias", label: "Categorias", icon: <FaBuffer /> },
-        { to: "/abogado/perfil", label: "Perfil", icon: <FaUserCircle /> }
+        { to: "/abogado/contract", label: "Contratos", icon: <FaFileContract /> },
+        { to: "/abogado/profile", label: "Perfil", icon: <FaUserCircle /> }
     ];
 
     const logoutLink = {

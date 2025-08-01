@@ -10,8 +10,9 @@ import RegistroUsuario from "../modules/admin/components/registro_usuario"
 import EditarUsuario from "../modules/admin/components/editar_usuario"
 import EditarCategoria from "../modules/admin/components/editar_categoria"
 import PasswordRecoveryForm from "../modules/auth/views/PasswordRecoveryForm";
-
-
+import LayoutAbo from "../modules/abogado/components/layout/LayoutAbo";
+import ProfileAbo from "../modules/abogado/views/Profile";
+import Contract from "../modules/abogado/views/Contract";
 
 
 
@@ -35,6 +36,13 @@ const AppRouter = () => {
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="usuarios/add" element={<RegistroUsuario />} />
           <Route path="usuarios/edit/:id" element={<EditarUsuario />} />
+
+        </Route>
+
+        {/* Rutas protegidas para el abogado */}
+        <Route path="/abogado" element={<LayoutAbo />}>
+          <Route path="profile" element={<ProfileAbo />} />
+          <Route path="contract" element={<Contract/>} />
 
         </Route>
 
