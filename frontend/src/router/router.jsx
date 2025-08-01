@@ -9,15 +9,22 @@ import Usuarios from "../modules/admin/views/Usuarios"
 import RegistroUsuario from "../modules/admin/components/registro_usuario"
 import EditarUsuario from "../modules/admin/components/editar_usuario"
 import EditarCategoria from "../modules/admin/components/editar_categoria"
-import LayoutAbo from "../modules/abogado/components/layout/LayoutAbo";
-import Profile from "../modules/abogado/views/Profile";
+import PasswordRecoveryForm from "../modules/auth/views/PasswordRecoveryForm";
+
+
+
+
 
 const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
 
+        {/* Rutas públicas */}
+        <Route path="/" element={<Login />} />
+        <Route path="/forgot-password" element={<PasswordRecoveryForm />} />
+
+        {/* Rutas protegidas para el administrador */}
         <Route path="/admin" element={<LayoutAdmin />}>
 
           <Route path="contratos" element={<Contratos />} />
@@ -29,11 +36,6 @@ const AppRouter = () => {
           <Route path="usuarios/add" element={<RegistroUsuario />} />
           <Route path="usuarios/edit/:id" element={<EditarUsuario />} />
 
-        </Route>
-
-        {/* Endpoints protegidos para el abogado */}
-        <Route path="/abogado" element={<LayoutAbo/>}>
-          <Route path="profile" element={<Profile/>}/>
         </Route>
 
 

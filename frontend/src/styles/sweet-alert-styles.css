@@ -1,0 +1,29 @@
+.colored-toast.swal2-icon-success .colored-toast.swal2-icon-error .colored-toast.swal2-icon-warning .colored-toast.swal2-icon-info{
+    background-color: #ffffff !important;
+}
+
+
+.colored-toast.swal2-icon-question {
+    background-color: #ffffff !important;
+}
+
+.colored-toast .swal2-title {
+    color: var(--color-azul-100);
+}
+
+.colored-toast .swal2-close {
+    color: var(--color-azul-100);
+}
+
+.colored-toast .swal2-html-container {
+    color: var(--color-azul-100);
+}
+
+.timer-popup .swal2-icon {
+    color: #70af72;
+    font-size: 0.8rem;
+}
+
+.timer-popup .swal2-timer-progress-bar {
+    background-color: #70af72;
+}
