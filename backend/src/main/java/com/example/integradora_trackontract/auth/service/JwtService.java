@@ -9,8 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class JwtService {
@@ -41,12 +40,18 @@ public class JwtService {
     }
 
     public String buildToken(final User user, final long expiration){
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("name", user.getName());
+        claims.put("roles", Collections.singletonList(
+                user.getRol_id().getName()
+        ));
         return Jwts.builder()
-                .id(user.getId().toString())
-                .claims(Map.of("name", user.getName()))
-                .subject(user.getEmail())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .setId(user.getId().toString())
+                .setClaims(claims)
+                //.claims(Map.of("name", user.getName()))
+                .setSubject(user.getEmail())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSingInKey())
                 .compact();
 
@@ -68,6 +73,10 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
         return jwtToken.getExpiration();
+    }
+
+    public SecretKey getSigningKey() {
+        return getSingInKey();
     }
 
     private SecretKey getSingInKey() {

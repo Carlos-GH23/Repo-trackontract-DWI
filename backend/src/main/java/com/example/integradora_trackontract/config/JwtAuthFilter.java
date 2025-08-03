@@ -22,6 +22,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Optional;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.stream.Collectors;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -39,7 +44,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
             )throws ServletException, IOException {
 
-        if (request.getServletPath().contains("/auth/")) {
+        String path = request.getServletPath();
+        if (path.startsWith("/auth/")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -51,6 +57,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         final String jwtToken = authHeader.substring(7);
+
         final String userEmail = jwtService.extractUsername(jwtToken);
         if (userEmail == null || SecurityContextHolder.getContext().getAuthentication() != null) {
             filterChain.doFilter(request, response);
@@ -65,27 +72,33 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         final UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-        final Optional<User> user = userrepository.findByEmail(userDetails.getUsername());
-        if (user.isEmpty()) {
+        Optional<User> userOpt = userrepository.findByEmail(userDetails.getUsername());
+        if (userOpt.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        User user = userOpt.get();
+
+        if (!jwtService.isTokenValid(jwtToken, user)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        final boolean isTokenValid = jwtService.isTokenValid(jwtToken, user.get());
-        if (!isTokenValid) {
-            return;
-        }
+        SimpleGrantedAuthority authority =
+                new SimpleGrantedAuthority("ROLE_" + user.getRol_id().getName());
+        List<SimpleGrantedAuthority> authorities = List.of(authority);
 
-        final var authToken = new UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                userDetails.getAuthorities()
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        authorities
+                );
+        authToken.setDetails(
+                new WebAuthenticationDetailsSource().buildDetails(request)
         );
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
-
-
     }
 }

@@ -31,10 +31,18 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers("/auth/**")
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated()
+                        req.requestMatchers("/auth/**").permitAll()
+
+                                // Solo ADMIN y ABOGADO pueden acceder a gestión de clientes
+                                .requestMatchers("/clients/**")
+                                .hasAnyRole("ADMIN", "ABOGADO")
+
+                                // Solo ADMIN puede acceder a cualquier ruta /admin/**
+                                .requestMatchers("/admin/**")
+                                .hasRole("ADMIN")
+
+                                // Cualquiera autenticado puede acceder al resto
+                                .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
