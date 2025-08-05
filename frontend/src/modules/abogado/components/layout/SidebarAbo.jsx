@@ -1,12 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
-import {FaUsers,FaFileContract,FaBuffer,FaChevronLeft,FaChevronRight,FaUserCircle,FaSignOutAlt} from "react-icons/fa";
+import {FaUsers,FaFileContract,FaCity ,FaChevronLeft,FaChevronRight,FaUserCircle,FaSignOutAlt} from "react-icons/fa";
 
 const SidebarAbo = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
 
     const links = [
         { to: "/abogado/contract", label: "Contratos", icon: <FaFileContract /> },
-        { to: "/abogado/profile", label: "Perfil", icon: <FaUserCircle /> }
+        { to: "/abogado/empresas", label: "Empresas", icon: <FaCity /> },
+        { to: "/abogado/profile", label: "Perfil", icon: <FaUserCircle /> },
     ];
 
     const logoutLink = {

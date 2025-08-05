@@ -16,7 +16,10 @@ const NavbarAbo = () => {
             title: 'Contratos',
             subtitle: 'Visualiza y gestiona tus contratos legales de las empresas',
         },
-        // Agrega más rutas según necesites
+        '/abogado/empresas': {
+            title: 'Empresas',
+            subtitle: 'Visualiza a que empresas les has brindado servicios legales',
+        },
     };
 
     const currentRoute = routeInfo[location.pathname] || {

@@ -13,6 +13,7 @@ import PasswordRecoveryForm from "../modules/auth/views/PasswordRecoveryForm";
 import LayoutAbo from "../modules/abogado/components/layout/LayoutAbo";
 import ProfileAbo from "../modules/abogado/views/Profile";
 import Contract from "../modules/abogado/views/Contract";
+import Empresas from "../modules/abogado/views/Empresas";
 
 
 
@@ -43,6 +44,7 @@ const AppRouter = () => {
         <Route path="/abogado" element={<LayoutAbo />}>
           <Route path="profile" element={<ProfileAbo />} />
           <Route path="contract" element={<Contract/>} />
+          <Route path="empresas" element={<Empresas/>} />
 
         </Route>
 
