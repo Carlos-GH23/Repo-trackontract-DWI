@@ -30,36 +30,69 @@ public class AdminInitializer implements ApplicationListener<ContextRefreshedEve
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (alreadySetup) return;
 
-        String adminEmail = "admin@example.com";
+        // ADMIN
+        createUserIfNotExists(
+                "admin@example.com",
+                "Admin",
+                "Root",
+                "5551234567",
+                "admin123",
+                "ADMIN",
+                "Administrador del sistema"
+        );
 
-        if (userRepository.findByEmail(adminEmail).isEmpty()) {
-            Roles adminRole = rolesRepository.findByName("ADMIN")
-                    .orElseGet(() -> {
-                        Roles newRole = new Roles();
-                        newRole.setName("ADMIN");
-                        newRole.setDescription("Administrador del sistema");
-                        return rolesRepository.save(newRole);
-                    });
+        // ABOGADO
+        createUserIfNotExists(
+                "lawyer@example.com",
+                "Laura",
+                "Justice",
+                "5551112222",
+                "lawyer123",
+                "ABOGADO",
+                "Abogado del sistema"
+        );
 
-            User adminUser = new User();
-            adminUser.setName("Admin");
-            adminUser.setLastName("Root");
-            adminUser.setEmail(adminEmail);
-            adminUser.setPhoneNumber("5551234567");
-            adminUser.setPassword(passwordEncoder.encode("admin123"));
-            adminUser.setStatus(true);
-            adminUser.setCreated_at(LocalDateTime.now());
-            adminUser.setUpdated_at(LocalDateTime.now());
-            adminUser.setLogin_attempts(0);
-            adminUser.setRol_id(adminRole);
-
-            userRepository.save(adminUser);
-
-            System.out.println("Usuario administrador creado con éxito");
-        } else {
-            System.out.println("Usuario administrador ya existe");
-        }
+        // CLIENT
+        createUserIfNotExists(
+                "client@example.com",
+                "Carlos",
+                "Client",
+                "5553334444",
+                "client123",
+                "CLIENT",
+                "Cliente del sistema"
+        );
 
         alreadySetup = true;
+    }
+
+    private void createUserIfNotExists(String email, String name, String lastName, String phone, String rawPassword, String roleName, String roleDesc) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            System.out.println("Usuario ya existe: " + email);
+            return;
+        }
+
+        Roles role = rolesRepository.findByName(roleName)
+                .orElseGet(() -> {
+                    Roles newRole = new Roles();
+                    newRole.setName(roleName);
+                    newRole.setDescription(roleDesc);
+                    return rolesRepository.save(newRole);
+                });
+
+        User user = new User();
+        user.setName(name);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPhoneNumber(phone);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setStatus(true);
+        user.setCreated_at(LocalDateTime.now());
+        user.setUpdated_at(LocalDateTime.now());
+        user.setLogin_attempts(0);
+        user.setRol_id(role);
+
+        userRepository.save(user);
+        System.out.println("Usuario creado: " + email);
     }
 }
