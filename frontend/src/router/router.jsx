@@ -15,8 +15,11 @@ import ProfileAbo from "../modules/abogado/views/Profile";
 import Contract from "../modules/abogado/views/Contract";
 import Empresas from "../modules/abogado/views/Empresas";
 import ContratoAcep from "../modules/abogado/components/contratoAcep";
-
-
+import Clientes from "../modules/admin/views/Clientes"
+import RegistroCliente from "../modules/admin/components/registro_cliente"
+import EditarCliente from "../modules/admin/components/editar_cliente"
+import EditarContrato from "../modules/admin/components/editar_contrato"
+import ProfileAdmin from "../modules/admin/views/Perfil"
 
 const AppRouter = () => {
   return (
@@ -32,12 +35,17 @@ const AppRouter = () => {
 
           <Route path="contratos" element={<Contratos />} />
           <Route path="contratos/add" element={<RegistroContrato />} />
+          <Route path="contratos/edit/:id" element={<EditarContrato />} />
           <Route path="categorias" element={<Categorias />} />
           <Route path="categorias/add" element={<RegistroCategoria />} />
           <Route path="categorias/edit/:id" element={<EditarCategoria />} />
-          <Route path="usuarios" element={<Usuarios />} />
-          <Route path="usuarios/add" element={<RegistroUsuario />} />
-          <Route path="usuarios/edit/:id" element={<EditarUsuario />} />
+          <Route path="clientes" element={<Clientes />} />
+          <Route path="clientes/add" element={<RegistroCliente />} />
+          <Route path="clientes/edit/:id" element={<EditarCliente />} />
+          <Route path="abogados" element={<Usuarios />} />
+          <Route path="abogados/add" element={<RegistroUsuario />} />
+          <Route path="abogados/edit/:id" element={<EditarUsuario />} />
+          <Route path="perfil" element={<ProfileAdmin />} />
 
         </Route>
 

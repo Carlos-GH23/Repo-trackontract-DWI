@@ -1,32 +1,32 @@
 import React, { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 
-const usuariosMock = [
+const abogadosMock = [
   {
     nombre: "Carlos",
     apellidos: "Galán Hernández",
-    correo: "202213nt164@utsz.edu.mx",
+    correo: "carlos.abogado@firma.com",
     telefono: "7776432657",
     estado: "Activo",
   },
   {
     nombre: "María",
     apellidos: "González López",
-    correo: "maria.gonzalez@utsz.edu.mx",
+    correo: "maria.gonzalez@firma.com",
     telefono: "7771234567",
     estado: "Activo",
   },
   {
     nombre: "Juan",
     apellidos: "Pérez Martínez",
-    correo: "juan.perez@utsz.edu.mx",
+    correo: "juan.perez@firma.com",
     telefono: "7779876543",
     estado: "Inactivo",
   },
   {
     nombre: "Ana",
     apellidos: "Rodríguez Silva",
-    correo: "ana.rodriguez@utsz.edu.mx",
+    correo: "ana.rodriguez@firma.com",
     telefono: "7775551234",
     estado: "Activo",
   },
@@ -45,11 +45,11 @@ export default function EditarUsuario() {
   })
 
   useEffect(() => {
-    const user = usuariosMock[id]
-    if (user) {
-      setFormData(user)
+    const abogado = abogadosMock[id]
+    if (abogado) {
+      setFormData(abogado)
     } else {
-      console.warn("Usuario no encontrado")
+      console.warn("Abogado no encontrado")
     }
   }, [id])
 
@@ -68,7 +68,7 @@ export default function EditarUsuario() {
   const handleSubmit = (e) => {
     e.preventDefault()
     console.log("Datos actualizados:", formData)
-    navigate("/admin/usuarios")
+    navigate("/admin/abogados")
   }
 
   return (
@@ -76,7 +76,7 @@ export default function EditarUsuario() {
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => navigate("/admin/usuarios")}
+            onClick={() => navigate("/admin/abogados")}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <svg
@@ -110,9 +110,9 @@ export default function EditarUsuario() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Editar Usuario</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Editar Abogado</h1>
               <p className="text-sm text-gray-600">
-                Modifica la información y estado del usuario seleccionado
+                Modifica la información y estado del abogado seleccionado
               </p>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function EditarUsuario() {
                   strokeWidth={2}
                 />
               </svg>
-              Información del Usuario
+              Información del Abogado
             </h3>
           </div>
 
@@ -173,7 +173,7 @@ export default function EditarUsuario() {
                 name="correo"
                 value={formData.correo}
                 onChange={handleChange}
-                placeholder="usuario@ejemplo.com"
+                placeholder="abogado@firma.com"
                 type="email"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               />
@@ -195,7 +195,7 @@ export default function EditarUsuario() {
 
           <div className="px-6 pb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Estado del Usuario
+              Estado del Abogado
             </label>
             <div className="flex items-center space-x-3">
               <button
@@ -207,9 +207,7 @@ export default function EditarUsuario() {
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formData.estado === "Activo"
-                      ? "translate-x-6"
-                      : "translate-x-1"
+                    formData.estado === "Activo" ? "translate-x-6" : "translate-x-1"
                   }`}
                 />
               </button>
@@ -223,7 +221,7 @@ export default function EditarUsuario() {
         <div className="flex justify-end gap-4">
           <button
             type="button"
-            onClick={() => navigate("/admin/usuarios")}
+            onClick={() => navigate("/admin/abogados")}
             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
           >
             Cancelar

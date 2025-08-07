@@ -1,33 +1,33 @@
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa"
 import { Link } from "react-router-dom"
 
-const usuarios = [
+const abogados = [
   {
-    nombre: "Carlos",
-    apellidos: "Galán Hernández",
-    correo: "202213nt164@utsz.edu.mx",
-    telefono: "7776432657",
+    nombre: "Luis",
+    apellidos: "Ramírez Salgado",
+    correo: "luis.ramirez@bufetejuridico.com",
+    telefono: "5512345678",
     estado: "Activo",
   },
   {
-    nombre: "María",
-    apellidos: "González López",
-    correo: "maria.gonzalez@utsz.edu.mx",
-    telefono: "7771234567",
+    nombre: "Carla",
+    apellidos: "Hernández Soto",
+    correo: "carla.hernandez@legalmex.com",
+    telefono: "5543219876",
     estado: "Activo",
   },
   {
-    nombre: "Juan",
-    apellidos: "Pérez Martínez",
-    correo: "juan.perez@utsz.edu.mx",
-    telefono: "7779876543",
+    nombre: "Jorge",
+    apellidos: "Mendoza Torres",
+    correo: "jorge.mendoza@defensoresmx.com",
+    telefono: "5523456789",
     estado: "Inactivo",
   },
   {
-    nombre: "Ana",
-    apellidos: "Rodríguez Silva",
-    correo: "ana.rodriguez@utsz.edu.mx",
-    telefono: "7775551234",
+    nombre: "Paola",
+    apellidos: "Luna Rivera",
+    correo: "paola.luna@lexjuris.com",
+    telefono: "5534567890",
     estado: "Activo",
   },
 ]
@@ -53,26 +53,26 @@ export default function Usuarios() {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Usuarios Registrados</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Abogados Registrados</h1>
             <p className="text-sm text-gray-600">
-              Panel de Administración - Gestión de Usuarios
+              Panel de Administración - Gestión de Abogados
             </p>
           </div>
         </div>
 
         <Link
-          to="/admin/usuarios/add"
+          to="/admin/abogados/add"
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 shadow-md"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Registrar Usuario
+          Registrar Abogado
         </Link>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {usuarios.map((user, idx) => (
+        {abogados.map((abogado, idx) => (
           <div
             key={idx}
             className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border border-gray-200"
@@ -80,16 +80,16 @@ export default function Usuarios() {
             <div className="p-6">
               <div className="flex justify-between items-start mb-3">
                 <h2 className="text-lg font-semibold text-gray-800">
-                  {user.nombre} {user.apellidos}
+                  {abogado.nombre} {abogado.apellidos}
                 </h2>
                 <span
                   className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    user.estado === "Activo"
+                    abogado.estado === "Activo"
                       ? "bg-green-100 text-green-800"
                       : "bg-red-100 text-red-800"
                   }`}
                 >
-                  {user.estado}
+                  {abogado.estado}
                 </span>
               </div>
 
@@ -108,7 +108,7 @@ export default function Usuarios() {
                       d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                   </svg>
-                  {user.correo}
+                  {abogado.correo}
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <svg
@@ -124,7 +124,7 @@ export default function Usuarios() {
                       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                     />
                   </svg>
-                  {user.telefono}
+                  {abogado.telefono}
                 </div>
               </div>
 
@@ -136,7 +136,7 @@ export default function Usuarios() {
                   <FaEye />
                 </button>
                 <Link
-                  to={`/admin/usuarios/edit/${idx}`}
+                  to={`/admin/abogados/edit/${idx}`}
                   className="p-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg"
                   title="Editar"
                 >

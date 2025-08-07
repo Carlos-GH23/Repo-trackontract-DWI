@@ -92,12 +92,13 @@ export default function Contratos() {
                                 >
                                     <FaEye />
                                 </button>
-                                <button
-                                    title="Editar"
+                                <Link
+                                    to={`/admin/contratos/edit/${idx}`}
                                     className="p-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg"
+                                    title="Editar"
                                 >
                                     <FaEdit />
-                                </button>
+                                </Link>
                                 <button
                                     title="Eliminar"
                                     className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
