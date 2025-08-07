@@ -1,21 +1,62 @@
-import React from "react"
-import { useState } from "react"
-import { Link } from "react-router-dom"
-import styles from "../styles/form-login.module.css"
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import {jwtDecode} from "jwt-decode";
+import styles from "../styles/form-login.module.css";
+
 
 const FormLogin = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    e.preventDefault()
-    console.log("Login attempt:", { email, password })
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
+    try {
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) throw new Error("Error al iniciar sesión");
+
+      const data = await response.json();
+
+      // Guarda tokens
+      localStorage.setItem("accessToken", data.access_token);
+      localStorage.setItem("refreshToken", data.refresh_token);
+
+      // Decodifica token
+      const decoded = jwtDecode(data.access_token);
+      const role = decoded?.roles?.[0] || decoded?.role;
+      console.log("Rol detectado:", role);
+
+      // Guarda rol para PrivateRoute
+      localStorage.setItem("role", role);
+
+      // Redirecciona según rol
+      if (role === "ADMIN") {
+        navigate("/admin/contratos");
+      } else if (role === "ABOGADO") {
+        navigate("/abogado/profile");
+      } else {
+        alert("Rol no reconocido");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Credenciales incorrectas o cuenta bloqueada");
+    }
+  };
+
+
+
+
+
+
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
 
   return (
     <div className={styles.container}>
