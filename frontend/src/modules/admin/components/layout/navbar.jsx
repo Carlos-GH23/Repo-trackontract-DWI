@@ -10,6 +10,25 @@ const Navbar = () => {
     const [hideNavbar, setHideNavbar] = useState(false)
     const [lastScrollY, setLastScrollY] = useState(0)
 
+    const navigate = useNavigate();
+    const handleLogout = async () => {
+        const token = localStorage.getItem("accessToken");
+
+        if (token) {
+            try {
+                await fetch("http://localhost:8080/auth/logout", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            } catch (error) {
+                console.error("Error al invalidar el token:", error);
+            }
+        }
+
+        localStorage.clear();
+        navigate("/");
+    };
+
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY
@@ -60,6 +79,7 @@ const Navbar = () => {
     }
 
 
+
     return (
         <header className={`navbarbo transition-transform duration-300 ${hideNavbar ? "-translate-y-full" : "translate-y-0"}`}>
             <h2 className="icoNo">
@@ -70,6 +90,16 @@ const Navbar = () => {
                     <p>{currentRoute.subtitle}</p>
                 </div>
             </h2>
+            <div className="flex items-center gap-4">
+                <span className="text-sm text-[var(--color-gris-texto)]">Rol del Usuario</span>
+
+                <button
+                onClick={handleLogout}
+                    className="px-3 py-2 rounded-md bg-[var(--color-marron)] text-white font-medium hover:bg-[var(--color-cafe)] transition ">
+                    Cerrar sesión
+                </button>
+            </div>
+
         </header>
     )
 }
