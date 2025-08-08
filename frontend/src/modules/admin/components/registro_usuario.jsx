@@ -11,7 +11,7 @@ export default function RegistroUsuario() {
         <div className="flex items-center mb-8 justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigate("/admin/usuarios")}
+              onClick={() => navigate("/admin/abogados")}
               className="mr-2 p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
             >
               <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,8 +34,8 @@ export default function RegistroUsuario() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Registro de Nuevo Usuario</h1>
-              <p className="text-sm text-gray-600">Panel de Administración - Gestión de Usuarios</p>
+              <h1 className="text-2xl font-bold text-gray-900">Registro de Abogado</h1>
+              <p className="text-sm text-gray-600">Panel de Administración - Gestión de Abogados</p>
             </div>
           </div>
         </div>
@@ -80,11 +80,7 @@ export default function RegistroUsuario() {
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <input placeholder="Contraseña *" type="password" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
-                <option>Selecciona un rol</option>
-                <option>Administrador</option>
-                <option>Usuario</option>
-              </select>
+              <input placeholder="Confirmar Contraseña *" type="password" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
             </div>
 
             <div className="p-6">
@@ -112,16 +108,16 @@ export default function RegistroUsuario() {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => navigate("/admin/usuarios")}
+              onClick={() => navigate("/admin/abogados")}
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
             >
               Cancelar
             </button>
             <button
-              type="button"
+              type="submit"
               className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
             >
-              Registrar Usuario
+              Registrar Abogado
             </button>
           </div>
         </form>

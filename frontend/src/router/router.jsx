@@ -12,10 +12,17 @@ import Usuarios from "../modules/admin/views/Usuarios"
 import RegistroUsuario from "../modules/admin/components/registro_usuario"
 import EditarUsuario from "../modules/admin/components/editar_usuario"
 import EditarCategoria from "../modules/admin/components/editar_categoria"
-import ProfileAbo from "../modules/abogado/views/Profile"
-import Contract from "../modules/abogado/views/Contract"
-import Empresas from "../modules/abogado/views/Empresas"
+import ProfileAbo from "../modules/abogado/views/Profile";
+import Contract from "../modules/abogado/views/Contract";
+import Empresas from "../modules/abogado/views/Empresas";
+import ContratoAcep from "../modules/abogado/components/contratoAcep";
+import Clientes from "../modules/admin/views/Clientes"
+import RegistroCliente from "../modules/admin/components/registro_cliente"
+import EditarCliente from "../modules/admin/components/editar_cliente"
+import EditarContrato from "../modules/admin/components/editar_contrato"
+import ProfileAdmin from "../modules/admin/views/Perfil"
 import PrivateRoute from "./PrivateRoute"
+
 
 const AppRouter = () => {
   return (
@@ -29,13 +36,18 @@ const AppRouter = () => {
           <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
             <Route path="/admin" element={<LayoutAdmin />}>
               <Route path="contratos" element={<Contratos />} />
-              <Route path="contratos/add" element={<RegistroContrato />} />
-              <Route path="categorias" element={<Categorias />} />
-              <Route path="categorias/add" element={<RegistroCategoria />} />
-              <Route path="categorias/edit/:id" element={<EditarCategoria />} />
-              <Route path="usuarios" element={<Usuarios />} />
-              <Route path="usuarios/add" element={<RegistroUsuario />} />
-              <Route path="usuarios/edit/:id" element={<EditarUsuario />} />
+          <Route path="contratos/add" element={<RegistroContrato />} />
+          <Route path="contratos/edit/:id" element={<EditarContrato />} />
+          <Route path="categorias" element={<Categorias />} />
+          <Route path="categorias/add" element={<RegistroCategoria />} />
+          <Route path="categorias/edit/:id" element={<EditarCategoria />} />
+          <Route path="clientes" element={<Clientes />} />
+          <Route path="clientes/add" element={<RegistroCliente />} />
+          <Route path="clientes/edit/:id" element={<EditarCliente />} />
+          <Route path="abogados" element={<Usuarios />} />
+          <Route path="abogados/add" element={<RegistroUsuario />} />
+          <Route path="abogados/edit/:id" element={<EditarUsuario />} />
+          <Route path="perfil" element={<ProfileAdmin />} />
             </Route>
           </Route>
 
@@ -52,4 +64,5 @@ const AppRouter = () => {
   )
 }
 
-export default AppRouter
+
+export default AppRouter;

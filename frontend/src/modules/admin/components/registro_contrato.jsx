@@ -53,16 +53,16 @@ export default function RegistroContrato() {
           </div>
 
           <div className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Contrato *</label>
-                <input
-                  type="text"
-                  placeholder="Contrato de Servicios Profesionales 2025"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                />
-              </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Contrato *</label>
+              <input
+                type="text"
+                placeholder="Contrato de Servicios Profesionales 2025"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+              />
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
                 <select
@@ -73,9 +73,7 @@ export default function RegistroContrato() {
                   <option>TechCorp Solutions</option>
                 </select>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
                 <select
@@ -84,9 +82,13 @@ export default function RegistroContrato() {
                   <option>Seleccione una categoría</option>
                   <option>Servicios Profesionales</option>
                   <option>Mantenimiento</option>
+                  <option>Consultoría</option>
+                  <option>Capacitación</option>
                 </select>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Vencimiento *</label>
                 <input
@@ -94,26 +96,23 @@ export default function RegistroContrato() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Estado del Contrato *</label>
-              <div className="flex items-center space-x-4">
-                <div
-                  onClick={() => setHabilitado(!habilitado)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer transition-colors duration-300 ${habilitado ? "bg-green-600" : "bg-gray-400"}`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${habilitado ? "translate-x-6" : "translate-x-1"}`}
-                  />
-                </div>
-                <div className="flex items-center">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Estado del Contrato *</label>
+                <div className="flex items-center space-x-4 mt-1">
+                  <div
+                    onClick={() => setHabilitado(!habilitado)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer transition-colors duration-300 ${habilitado ? "bg-green-600" : "bg-gray-400"}`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${habilitado ? "translate-x-6" : "translate-x-1"}`}
+                    />
+                  </div>
                   <span className="text-sm font-medium text-gray-700">
                     {habilitado ? "Habilitado" : "Inhabilitado"}
                   </span>
                 </div>
               </div>
-              
             </div>
 
             <div>
