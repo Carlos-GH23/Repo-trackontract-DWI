@@ -50,11 +50,11 @@ const Contract = () => {
             }
         });
 
+        setCargando(false);
         // Simula carga y después muestra éxito
         setTimeout(() => {
             const nuevos = contratos.filter((_, i) => i !== idx);
             setContratos(nuevos);
-            setCargando(false);
             // Actualiza la alerta a "Contrato aceptado"
             Swal.update({
                 title: '¡Éxito!',
@@ -73,12 +73,25 @@ const Contract = () => {
     };
 
     const rechazarContrato = () => {
+        // Validación: comentario vacío
+        if (!comentario.trim()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Por favor, ingresa un motivo para rechazar el contrato.',
+                confirmButtonColor: '#7F56D9',
+            });
+            return; // No continuar
+        }
+
+        // Eliminar contrato y cerrar modal
         const nuevos = contratos.filter((_, i) => i !== contratoRechazar);
         setContratos(nuevos);
         setShowModal(false);
         setComentario("");
         setContratoRechazar(null);
 
+        // Alerta de éxito
         Swal.fire({
             icon: 'success',
             title: 'Contrato rechazado',
@@ -86,6 +99,7 @@ const Contract = () => {
             confirmButtonColor: '#7F56D9',
         });
     };
+
 
 
     return (
@@ -108,6 +122,9 @@ const Contract = () => {
                         <div className="p-6">
                             <div className="flex justify-between items-start mb-4">
                                 <h2 className="text-xl font-semibold text-gray-800">{contrato.nombre}</h2>
+                                <span className={`text-sm font-medium px-2 py-1 rounded-full ${contrato.estado === "Activo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                                    {contrato.estado}
+                                </span>
                             </div>
 
                             <div className="space-y-2 text-sm text-gray-700">
