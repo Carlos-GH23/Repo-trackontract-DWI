@@ -56,8 +56,8 @@ const SidebarCompa = ({ isCollapsed, setIsCollapsed }) => {
                 ))}
             </nav>
 
-            <div className="mt-auto p-2">
-                <div className="mt-auto p-2">
+            <div className="mt-auto p-1">
+                <div className="mt-auto p-1">
                     <button
                         onClick={handleLogout}
                         className={`w-full text-left flex items-center gap-2 p-4 rounded-md transition bg-white/10 hover:bg-white/20 ${
