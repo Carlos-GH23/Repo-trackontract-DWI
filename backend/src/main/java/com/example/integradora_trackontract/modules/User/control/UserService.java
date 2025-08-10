@@ -115,20 +115,19 @@ public class UserService {
         return new ResponseEntity<>(new Message(user, "El usuario se registró correctamente", TypesResponse.SUCCESS), HttpStatus.CREATED);
     }
 
-//Actualizar Usuarios
-
     @Transactional(rollbackFor = {SQLException.class})
     public ResponseEntity<Message> update(UserDTO dto) {
         Optional<User> userOptional = userRepository.findById(dto.getId());
         if (!userOptional.isPresent()) {
             return new ResponseEntity<>(new Message("Usuario no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
-        }if (dto.getName() == null || dto.getName().isEmpty()) {
+        }
+        if (dto.getName() == null || dto.getName().isEmpty()) {
             return new ResponseEntity<>(new Message("El nombre del usuario no puede ser nulo o vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
         if (dto.getName().length() > 50) {
             return new ResponseEntity<>(new Message("El nombre del usuario excede los 50 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
-        if(dto.getLast_name() == null || dto.getLast_name().isEmpty()) {
+        if (dto.getLast_name() == null || dto.getLast_name().isEmpty()) {
             return new ResponseEntity<>(new Message("El apellido del usuario no puede ser nulo o vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
         if (dto.getLast_name().length() > 50) {
@@ -146,29 +145,31 @@ public class UserService {
         if (dto.getPhoneNumber().length() > 15) {
             return new ResponseEntity<>(new Message("El número de teléfono del usuario excede los 15 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
-        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
-            return new ResponseEntity<>(new Message("La contraseña del usuario no puede ser nula o vacía", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
-        }
-        if (dto.getPassword().length() > 255) {
-            return new ResponseEntity<>(new Message("La contraseña del usuario excede los 255 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
-        }
-        String hashedPassword = passwordEncoder.encode(dto.getPassword());
 
         User user = userOptional.get();
+
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            String hashedPassword = passwordEncoder.encode(dto.getPassword());
+            user.setPassword(hashedPassword);
+        }
+
         user.setName(dto.getName());
         user.setLastName(dto.getLast_name());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
-        user.setPassword(hashedPassword);
         user.setStatus(dto.getStatus());
         user.setUpdated_at(LocalDateTime.now());
+
         user = userRepository.saveAndFlush(user);
+
         if (user == null) {
             return new ResponseEntity<>(new Message("El usuario no se actualizó", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
         }
+
         logger.info("Usuario actualizado correctamente");
         return new ResponseEntity<>(new Message(user, "Usuario actualizado correctamente", TypesResponse.SUCCESS), HttpStatus.OK);
     }
+
 
     //Desactivar/Activar Usuarios
     @Transactional(rollbackFor = {SQLException.class})
