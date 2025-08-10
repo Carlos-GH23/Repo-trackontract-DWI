@@ -42,7 +42,9 @@ const FormLogin = () => {
         navigate("/admin/contratos");
       } else if (role === "ABOGADO") {
         navigate("/abogado/profile");
-      } else {
+      } else if(role === "CLIENT") {
+        navigate("/empresa/profile");
+      }else {
         alert("Rol no reconocido");
       }
     } catch (err) {

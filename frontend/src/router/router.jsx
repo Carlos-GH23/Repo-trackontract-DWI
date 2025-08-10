@@ -15,13 +15,15 @@ import EditarCategoria from "../modules/admin/components/editar_categoria"
 import ProfileAbo from "../modules/abogado/views/Profile";
 import Contract from "../modules/abogado/views/Contract";
 import Empresas from "../modules/abogado/views/Empresas";
-import ContratoAcep from "../modules/abogado/components/contratoAcep";
 import Clientes from "../modules/admin/views/Clientes"
 import RegistroCliente from "../modules/admin/components/registro_cliente"
 import EditarCliente from "../modules/admin/components/editar_cliente"
 import EditarContrato from "../modules/admin/components/editar_contrato"
 import ProfileAdmin from "../modules/admin/views/Perfil"
 import PrivateRoute from "./PrivateRoute"
+import LayoutCompa from "../modules/companies/components/layout/LayoutCompa"
+import ProfileCompa from "../modules/companies/views/Profile"
+import Contrats from "../modules/companies/views/Contrats"
 
 
 const AppRouter = () => {
@@ -51,16 +53,24 @@ const AppRouter = () => {
           </Route>
         </Route>
 
-        {/* Rutas protegidas para ABOGADO */}
-        <Route element={<PrivateRoute allowedRoles={["ABOGADO"]} />}>
-          <Route path="/abogado" element={<LayoutAbo />}>
-            <Route path="profile" element={<ProfileAbo />} />
-            <Route path="contract" element={<Contract />} />
-            <Route path="empresas" element={<Empresas />} />
+          {/* Rutas protegidas para ABOGADO */}
+          <Route element={<PrivateRoute allowedRoles={["ABOGADO"]} />}>
+            <Route path="/abogado" element={<LayoutAbo />}>
+              <Route path="profile" element={<ProfileAbo />} />
+              <Route path="contract" element={<Contract />} />
+              <Route path="empresas" element={<Empresas />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </BrowserRouter>
+
+          {/* Rutas protegisdas para las Empresas */}
+          <Route element={<PrivateRoute allowedRoles={["CLIENT"]} />}>
+            <Route path="/empresa" element={<LayoutCompa />}>
+              <Route path="profile" element={< ProfileCompa/>} />
+              <Route path="contract" element={<Contrats />} />
+            </Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
   )
 }
 
