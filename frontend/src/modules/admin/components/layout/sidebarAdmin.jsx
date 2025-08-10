@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { FaUsers, FaFileContract, FaTags, FaChevronLeft, FaChevronRight, FaUserCircle, FaHistory, FaUserTie, FaAddressBook, FaSignOutAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const sidebarAdmin = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
+    const navigate = useNavigate();
 
     const links = [
         { to: "/admin/abogados", label: "Gestión de Abogados", icon: <FaUserTie /> },
@@ -12,6 +14,27 @@ const sidebarAdmin = ({ isCollapsed, setIsCollapsed }) => {
         { to: "/admin/perfil", label: "Perfil", icon: <FaUserCircle /> },
 
     ];
+
+    const handleLogout = async () => {
+        const accessToken = localStorage.getItem("access_token");
+
+        try {
+            await fetch("http://localhost:8080/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            });
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+        }
+
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("role");
+
+        navigate("/");
+    };
 
     const logoutLink = {
         to: "/",
@@ -38,13 +61,17 @@ const sidebarAdmin = ({ isCollapsed, setIsCollapsed }) => {
             </nav>
 
             <div className="mt-auto p-2">
-                <Link to={logoutLink.to}
-                    className={`flex items-center gap-2 p-4 rounded-md transition bg-white/10 hover:bg-white/20 ${location.pathname === logoutLink.to ? "bg-white/20" : ""
+                <div className="mt-auto">
+                    <button
+                        onClick={handleLogout}
+                        className={`w-full text-left flex items-center gap-2 p-4 rounded-md transition bg-white/10 hover:bg-white/20 ${
+                            location.pathname === logoutLink.to ? "bg-white/20" : ""
                         }`}
-                >
-                    {logoutLink.icon}
-                    {!isCollapsed && <span>{logoutLink.label}</span>}
-                </Link>
+                    >
+                        {logoutLink.icon}
+                        {!isCollapsed && <span>{logoutLink.label}</span>}
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -28,30 +28,30 @@ import Contrats from "../modules/companies/views/Contrats"
 
 const AppRouter = () => {
   return (
-      <BrowserRouter>
-        <Routes>
-          {/* Rutas públicas */}
-          <Route path="/" element={<Login />} />
-          <Route path="/forgot-password" element={<PasswordRecoveryForm />} />
+    <BrowserRouter>
+      <Routes>
+        {/* Rutas públicas */}
+        <Route path="/" element={<Login />} />
+        <Route path="/forgot-password" element={<PasswordRecoveryForm />} />
 
-          {/* Rutas protegidas para ADMIN */}
-          <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
-            <Route path="/admin" element={<LayoutAdmin />}>
-              <Route path="contratos" element={<Contratos />} />
-          <Route path="contratos/add" element={<RegistroContrato />} />
-          <Route path="contratos/edit/:id" element={<EditarContrato />} />
-          <Route path="categorias" element={<Categorias />} />
-          <Route path="categorias/add" element={<RegistroCategoria />} />
-          <Route path="categorias/edit/:id" element={<EditarCategoria />} />
-          <Route path="clientes" element={<Clientes />} />
-          <Route path="clientes/add" element={<RegistroCliente />} />
-          <Route path="clientes/edit/:id" element={<EditarCliente />} />
-          <Route path="abogados" element={<Usuarios />} />
-          <Route path="abogados/add" element={<RegistroUsuario />} />
-          <Route path="abogados/edit/:id" element={<EditarUsuario />} />
-          <Route path="perfil" element={<ProfileAdmin />} />
-            </Route>
+        {/* Rutas protegidas para ADMIN */}
+        <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin" element={<LayoutAdmin />}>
+            <Route path="contratos" element={<Contratos />} />
+            <Route path="contratos/add" element={<RegistroContrato />} />
+            <Route path="contratos/edit/:id" element={<EditarContrato />} />
+            <Route path="categorias" element={<Categorias />} />
+            <Route path="categorias/add" element={<RegistroCategoria />} />
+            <Route path="categorias/edit/:id" element={<EditarCategoria />} />
+            <Route path="clientes" element={<Clientes />} />
+            <Route path="clientes/add" element={<RegistroCliente />} />
+            <Route path="clientes/edit/:id" element={<EditarCliente />} />
+            <Route path="abogados" element={<Usuarios />} />
+            <Route path="abogados/add" element={<RegistroUsuario />} />
+            <Route path="abogados/edit/:id" element={<EditarUsuario />} />
+            <Route path="perfil" element={<ProfileAdmin />} />
           </Route>
+        </Route>
 
           {/* Rutas protegidas para ABOGADO */}
           <Route element={<PrivateRoute allowedRoles={["ABOGADO"]} />}>
