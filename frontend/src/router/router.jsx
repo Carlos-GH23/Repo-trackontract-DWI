@@ -24,6 +24,10 @@ import PrivateRoute from "./PrivateRoute"
 import LayoutCompa from "../modules/companies/components/layout/LayoutCompa"
 import ProfileCompa from "../modules/companies/views/Profile"
 import Contrats from "../modules/companies/views/Contrats"
+import CategoriasInactivas from "../modules/admin/views/CategoriasInactivas";
+import CategoriasActivas from "../modules/admin/views/CategoriasActivas";
+
+
 
 
 const AppRouter = () => {
@@ -43,6 +47,8 @@ const AppRouter = () => {
             <Route path="categorias" element={<Categorias />} />
             <Route path="categorias/add" element={<RegistroCategoria />} />
             <Route path="categorias/edit/:id" element={<EditarCategoria />} />
+            <Route path="categorias/inactivas" element={<CategoriasInactivas />} />
+            <Route path="categorias/activas" element={<CategoriasActivas />} />
             <Route path="clientes" element={<Clientes />} />
             <Route path="clientes/add" element={<RegistroCliente />} />
             <Route path="clientes/edit/:id" element={<EditarCliente />} />

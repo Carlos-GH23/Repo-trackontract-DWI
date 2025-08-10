@@ -47,8 +47,9 @@ public class CategoriesController {
 
     @GetMapping("/all/status/false")
     public List<Categories> getAllCategoriesByInactiveStatus() {
-        return categoriesService.findAllByStatusIsFalse(true);
+        return categoriesService.findAllByStatusIsFalse();
     }
+
 
     @GetMapping("/name/{name}")
     public ResponseEntity<Message> getCategoriesByName(@PathVariable String name) {

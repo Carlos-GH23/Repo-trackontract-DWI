@@ -7,13 +7,13 @@ public class CategoriesDTO {
     @NotNull(groups = {Modify.class, ChangeStatus.class})
     private Long id;
 
-    @NotBlank(groups = {Register.class, Modify.class})
+    @NotBlank(groups = {Register.class, Modify.class}, message = "El nombre no puede estar vacío")
     private String name;
 
-    @NotBlank(groups = {Register.class, Modify.class})
+    @NotBlank(groups = {Register.class, Modify.class}, message = "La descripción no puede estar vacía")
     private String description;
 
-    @NotNull(groups = {Register.class, ChangeStatus.class})
+    @NotNull(groups = {Register.class, ChangeStatus.class}, message = "El estado no puede ser nulo")
     private Boolean status;
 
     public CategoriesDTO() {

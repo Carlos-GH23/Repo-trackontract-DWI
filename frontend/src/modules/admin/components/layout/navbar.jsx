@@ -60,21 +60,24 @@ const Navbar = () => {
             title: 'Clientes',
             subtitle: 'Gestión de Clientes',
         },
-
         '/admin/contratos': {
             title: 'Contratos',
             subtitle: 'Gestión de contratos',
         },
         '/admin/categorias': {
-            title: 'Categorias',
-            subtitle: 'Gestión de Categorias',
+            title: 'Categorías',
+            subtitle: 'Gestión de Categorías',
+        },
+        '/admin/categorias/inactivas': {
+            title: 'Categorías Inactivas',
+            subtitle: 'Gestión de Categorías Inactivas',
         },
         '/admin/perfil': {
             title: 'Perfil',
             subtitle: 'Aquí podrás cambiar tu información personal y contraseña',
         },
+    };
 
-    }
 
     const currentRoute = routeInfo[location.pathname] || {
         title: 'Bienvenido Admin',
