@@ -1,4 +1,4 @@
-import "../../../styles/navbarbo.styles.css"
+import "../../../styles/perfil.styles.css"
 
 const ProfileAdmin = () => {
   return (

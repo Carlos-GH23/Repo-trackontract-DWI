@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
 import styles from "../styles/form-login.module.css";
+import { showErrorToast } from "../../../kernel/alerts";
 
 
 const FormLogin = () => {
@@ -46,13 +47,13 @@ const FormLogin = () => {
       }
     } catch (err) {
       console.error(err);
-      alert("Credenciales incorrectas o cuenta bloqueada");
+      showErrorToast({
+        title: "Error",
+        text: "Credenciales incorrectas o cuenta bloqueada",
+        timer: 4000
+      });
     }
   };
-
-
-
-
 
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
@@ -64,17 +65,7 @@ const FormLogin = () => {
         <div className={styles.logoContainer}>
           <div className={styles.logoWrapper}>
             <div className={styles.shield}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg"width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
