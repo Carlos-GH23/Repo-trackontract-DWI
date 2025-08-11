@@ -45,7 +45,6 @@ export default function RegistroCategoria() {
       return String(errorResponse);
     }
 
-
     try {
       const responseSave = await fetch("http://localhost:8080/categories/save", {
         method: "POST",
@@ -70,7 +69,6 @@ export default function RegistroCategoria() {
 
         throw new Error(errorMessage);
       }
-
 
       const data = await responseSave.json();
       const createdCategory = data.result || data;
@@ -112,6 +110,7 @@ export default function RegistroCategoria() {
             <button
                 onClick={volverACategorias}
                 className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition duration-200 shadow-sm"
+                aria-label="Volver a Categorías"
             >
               <svg
                   className="w-4 h-4 text-gray-700"
@@ -133,18 +132,31 @@ export default function RegistroCategoria() {
                 <h3 className="text-lg font-semibold text-gray-800">Datos de la Categoría</h3>
               </div>
               <div className="p-6 grid grid-cols-1 gap-4">
+                <label htmlFor="nombreCategoria" className="font-medium text-gray-700">
+                  Nombre de la Categoría *
+                </label>
                 <input
+                    id="nombreCategoria"
+                    name="nombreCategoria"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                     placeholder="Nombre de la Categoría *"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
+                    required
                 />
+
+                <label htmlFor="descripcionCategoria" className="font-medium text-gray-700">
+                  Descripción de la categoría *
+                </label>
                 <textarea
+                    id="descripcionCategoria"
+                    name="descripcionCategoria"
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
                     rows={4}
                     placeholder="Descripción de la categoría *"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none shadow-sm focus:ring-2 focus:ring-blue-500"
+                    required
                 />
               </div>
             </div>
@@ -158,10 +170,14 @@ export default function RegistroCategoria() {
                 <div className="flex items-center space-x-3">
                   <button
                       type="button"
+                      name="estadoCategoria"
+                      role="switch"
+                      aria-checked={categoriaHabilitada}
                       onClick={() => setCategoriaHabilitada(!categoriaHabilitada)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           categoriaHabilitada ? "bg-green-600" : "bg-gray-300"
                       }`}
+                      aria-label="Toggle Estado Categoría"
                   >
                   <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
