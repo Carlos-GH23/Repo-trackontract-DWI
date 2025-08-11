@@ -196,9 +196,9 @@ public class UserService {
             return new ResponseEntity<>(new Message("Usuario no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
         }
         User user = userOptional.get();
-        if (user.isStatus()) {
-            return new ResponseEntity<>(new Message("No se puede eliminar un usuario activo", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
-        }
+//        if (user.isStatus()) {
+//            return new ResponseEntity<>(new Message("No se puede eliminar un usuario activo", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+//        }
         userRepository.delete(user);
         logger.info("Usuario eliminado correctamente");
         return new ResponseEntity<>(new Message("Usuario eliminado correctamente", TypesResponse.SUCCESS), HttpStatus.OK);
