@@ -7,10 +7,22 @@ export default function Categorias() {
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchCategorias = async () => {
+  const [filtroStatus, setFiltroStatus] = useState(null); // null = todos, true=activos, false=inactivos
+  const [filtroNombre, setFiltroNombre] = useState("");
+
+  const fetchCategorias = async (statusFilter = filtroStatus) => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch("http://localhost:8080/categories/all", {
+      let url = "";
+
+      if (statusFilter !== null) {
+        url = `http://localhost:8080/categories/all/status/${statusFilter}`;
+      } else {
+        url = "http://localhost:8080/categories/all";
+      }
+
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -19,7 +31,15 @@ export default function Categorias() {
       if (!response.ok) throw new Error("Error al cargar categorías");
 
       const data = await response.json();
-      setCategorias(data.result || []);
+
+      if (Array.isArray(data)) {
+        setCategorias(data);
+      } else if (data.result && Array.isArray(data.result)) {
+        setCategorias(data.result);
+      } else {
+        setCategorias([]);
+      }
+
     } catch (error) {
       console.error(error);
       Swal.fire("Error", error.message, "error");
@@ -30,7 +50,7 @@ export default function Categorias() {
 
   useEffect(() => {
     fetchCategorias();
-  }, []);
+  }, [filtroStatus]);
 
   const handleEliminar = async (id) => {
     const result = await Swal.fire({
@@ -68,11 +88,16 @@ export default function Categorias() {
     }
   };
 
-  if (loading) return <p>Cargando categorías...</p>;
+  if (loading) return <p className="p-6">Cargando categorías...</p>;
+
+  // Filtrado local por nombre
+  const categoriasFiltradas = categorias.filter((cat) =>
+      cat.name.toLowerCase().includes(filtroNombre.toLowerCase())
+  );
 
   return (
       <div className="min-h-screen bg-white p-6">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-4">
             <div className="bg-blue-100 p-3 rounded-lg">{/* Icono si quieres */}</div>
             <div>
@@ -89,11 +114,50 @@ export default function Categorias() {
           </Link>
         </div>
 
-        {categorias.length === 0 ? (
+        {/* Filtros */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+          <div className="flex gap-3">
+            <button
+                onClick={() => setFiltroStatus(null)}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                    filtroStatus === null ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"
+                }`}
+            >
+              Todos
+            </button>
+            <button
+                onClick={() => setFiltroStatus(true)}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                    filtroStatus === true ? "bg-green-600 text-white" : "bg-gray-200 text-gray-800"
+                }`}
+            >
+              Activos
+            </button>
+            <button
+                onClick={() => setFiltroStatus(false)}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                    filtroStatus === false ? "bg-red-600 text-white" : "bg-gray-200 text-gray-800"
+                }`}
+            >
+              Inactivos
+            </button>
+          </div>
+
+          <input
+              type="text"
+              placeholder="Buscar por nombre..."
+              value={filtroNombre}
+              onChange={(e) => setFiltroNombre(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Lista de categorías */}
+        {categoriasFiltradas.length === 0 ? (
             <p className="text-center text-gray-500 text-lg">No hay categorías registradas.</p>
         ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categorias.map((categoria) => (
+              {categoriasFiltradas.map((categoria) => (
                   <div
                       key={categoria.id}
                       className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border border-gray-200"

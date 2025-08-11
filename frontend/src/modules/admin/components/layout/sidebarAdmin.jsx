@@ -12,16 +12,7 @@ const SidebarAdmin = ({ isCollapsed, setIsCollapsed }) => {
         { to: "/admin/abogados", label: "Gestión de Abogados", icon: <FaUserTie /> },
         { to: "/admin/clientes", label: "Gestión de Clientes", icon: <FaAddressBook /> },
         { to: "/admin/contratos", label: "Gestión de Contratos", icon: <FaFileContract /> },
-        {
-            label: "Gestión de Categorías",
-            icon: <FaTags />,
-            children: [
-                { to: "/admin/categorias", label: "Todas las Categorías" },
-                { to: "/admin/categorias/inactivas", label: "Categorías Inactivas" },
-                { to: "/admin/categorias/activas", label: "Categorías Activas" },
-
-            ]
-        },
+        { to: "/admin/categorias", label: "Gestión de Categorias", icon: <FaTags /> },
         { to: "/admin/perfil", label: "Perfil", icon: <FaUserCircle /> },
     ];
 
