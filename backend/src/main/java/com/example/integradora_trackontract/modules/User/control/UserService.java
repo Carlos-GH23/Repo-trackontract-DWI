@@ -1,10 +1,11 @@
 package com.example.integradora_trackontract.modules.User.control;
 
+import com.example.integradora_trackontract.auth.service.AuthService;
 import com.example.integradora_trackontract.modules.Categories.model.Categories;
 import com.example.integradora_trackontract.modules.Clients.model.Clients;
 import com.example.integradora_trackontract.modules.Contracts.control.ContractsService;
 import com.example.integradora_trackontract.modules.Contracts.model.Contracts;
-import com.example.integradora_trackontract.modules.Contracts.model.ContractsDTO;
+import com.example.integradora_trackontract.modules.Contracts.model.ContractsDTO; /*Me marca error en esta importacion*/
 import com.example.integradora_trackontract.modules.Roles.model.Roles;
 import com.example.integradora_trackontract.modules.User.model.User;
 import com.example.integradora_trackontract.modules.User.model.UserDTO;
@@ -37,11 +38,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @Autowired
-    public UserService(UserRepository userRepository,PasswordEncoder passwordEncoder ) {
+    public UserService(UserRepository userRepository,PasswordEncoder passwordEncoder,AuthService authService ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
     }
 
     //Busqueda de usuarios inactivos
@@ -245,5 +248,41 @@ public class UserService {
         List<User> activeUsers = userRepository.findAllByStatusIsTrue();
         List<User> inactiveUsers = userRepository.findAllByStatusIsFalse();
         logger.info("Usuarios activos: {}, Usuarios inactivos: {}", activeUsers.size(), inactiveUsers.size());
+    }
+
+    //Cambio de contraseña
+    public ResponseEntity<Message> changeMyPassword(String email,
+                                                    com.example.integradora_trackontract.modules.User.model.ChangePasswordRequest req) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email));
+
+        // Validaciones
+        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            return new ResponseEntity<>(new Message("La contraseña actual no es correcta", TypesResponse.WARNING),
+                    HttpStatus.UNAUTHORIZED);
+        }
+        if (!req.getNewPassword().equals(req.getConfirmNewPassword())) {
+            return new ResponseEntity<>(new Message("La confirmación no coincide", TypesResponse.WARNING),
+                    HttpStatus.BAD_REQUEST);
+        }
+        if (req.getNewPassword().length() < 8) {
+            return new ResponseEntity<>(new Message("La nueva contraseña debe tener al menos 8 caracteres", TypesResponse.WARNING),
+                    HttpStatus.BAD_REQUEST);
+        }
+        if (passwordEncoder.matches(req.getNewPassword(), user.getPassword())) {
+            return new ResponseEntity<>(new Message("La nueva contraseña no puede ser igual a la actual", TypesResponse.WARNING),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        // Actualizar
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        user.setUpdated_at(LocalDateTime.now());
+        userRepository.saveAndFlush(user);
+
+        // Seguridad extra: invalidar tokens activos
+        authService.revokeAllUserTokens(user);
+
+        return new ResponseEntity<>(new Message("Contraseña actualizada. Vuelve a iniciar sesión.", TypesResponse.SUCCESS),
+                HttpStatus.OK);
     }
 }
