@@ -2,7 +2,8 @@ package com.example.integradora_trackontract.modules.User.control;
 
 import com.example.integradora_trackontract.modules.Contracts.control.ContractsService;
 import com.example.integradora_trackontract.modules.Contracts.model.Contracts;
-import com.example.integradora_trackontract.modules.Contracts.model.ContractsDTO;
+import com.example.integradora_trackontract.modules.Contracts.model.ContractsDTO; /*Me marca error en esta importacion*/
+import com.example.integradora_trackontract.modules.User.model.ChangePasswordRequest;
 import com.example.integradora_trackontract.modules.User.model.User;
 import com.example.integradora_trackontract.modules.User.model.UserDTO;
 import com.example.integradora_trackontract.modules.User.model.UserProfileDTO;
@@ -75,5 +76,13 @@ public class UserController {
     ) {
         UserProfileDTO dto = userService.getProfile(userDetails.getUsername());
         return ResponseEntity.ok(dto);
+    }
+
+    //Cambio de contraseña
+    @PutMapping("/me/password")
+    public ResponseEntity<Message> changeMyPassword(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails ud,
+            @Validated @RequestBody ChangePasswordRequest body) {
+        return userService.changeMyPassword(ud.getUsername(), body);
     }
 }
