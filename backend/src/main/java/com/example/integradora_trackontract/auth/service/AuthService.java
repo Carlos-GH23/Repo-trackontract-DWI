@@ -5,6 +5,7 @@ import com.example.integradora_trackontract.modules.User.model.UserRepository;
 import com.example.integradora_trackontract.auth.controller.LoginRequest;
 import com.example.integradora_trackontract.auth.controller.RegisterRequest;
 import com.example.integradora_trackontract.auth.controller.TokenResponse;
+import com.example.integradora_trackontract.auth.controller.LoginResponse;
 import com.example.integradora_trackontract.auth.repository.Token;
 import com.example.integradora_trackontract.auth.repository.TokenRespository;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class AuthService {
         return new TokenResponse(jwtToken, refreshToken);
     }
 
-    public TokenResponse login(LoginRequest request){
+    public LoginResponse login(LoginRequest request){
         //Recuperar el usuario
         User user = userRepository.findByEmail(request.email())
                         .orElseThrow(() -> new UsernameNotFoundException("No existe usuario con email " + request.email()));
@@ -92,7 +93,16 @@ public class AuthService {
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
         savedUserToken(user, jwtToken);
-        return new TokenResponse(jwtToken, refreshToken);
+        
+        // Crear LoginResponse con token y información del usuario
+        var userInfo = new LoginResponse.UserInfo(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getRol_id().getName()
+        );
+        
+        return new LoginResponse(jwtToken, userInfo);
     }
 
     public void savedUserToken(User user, String jwtToken) {
@@ -142,5 +152,20 @@ public class AuthService {
         return new TokenResponse(accessToken, refreshToken);
     }
 
+    public void logout(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            revokeToken(token);
+        }
+    }
 
+    private void revokeToken(String token) {
+        var storedToken = tokenRespository.findByToken(token)
+                .orElse(null);
+        if (storedToken != null) {
+            storedToken.setExpired(true);
+            storedToken.setRevoked(true);
+            tokenRespository.save(storedToken);
+        }
+    }
 }

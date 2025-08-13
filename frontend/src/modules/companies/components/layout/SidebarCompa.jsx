@@ -47,7 +47,7 @@ const SidebarCompa = ({ isCollapsed, setIsCollapsed }) => {
                 </button>
             </div>
 
-            <nav className="flex flex-col gap-2 p-2">
+            <nav className="flex flex-col gap-3 p-2">
                 {links.map(({ to, label, icon }) => (
                     <Link key={to} to={to} className={`flex items-center gap-2 p-4 rounded-md transition bg-white/10 hover:bg-white/20 ${location.pathname === to ? "bg-white/20" : ""}`}>
                         {icon}

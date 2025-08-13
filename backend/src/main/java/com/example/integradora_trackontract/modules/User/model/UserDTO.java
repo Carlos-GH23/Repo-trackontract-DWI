@@ -18,7 +18,7 @@ public class UserDTO {
     @NotBlank(groups = {Register.class, Modify.class})
     private String email;
 
-    @NotNull(groups = {Register.class, ChangeStatus.class})
+    @NotNull(groups = {Register.class, Modify.class, ChangeStatus.class})
     private String phoneNumber;
 
     @NotNull(groups = {Register.class, ChangeStatus.class})

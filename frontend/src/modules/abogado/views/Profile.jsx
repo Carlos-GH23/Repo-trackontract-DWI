@@ -8,6 +8,7 @@ const ProfileAbo = () => {
     lastName: "",
     email: "",
     phoneNumber: "",
+    status: true, // Agregar el status
     roleName: ""
   });
 
@@ -32,6 +33,7 @@ const ProfileAbo = () => {
             lastName: data.lastName || "",
             email: data.email || "",
             phoneNumber: data.phoneNumber || "",
+            status: data.status || true, // Agregar el status
             roleName: data.roleName || ""
           });
         })
@@ -71,7 +73,8 @@ const ProfileAbo = () => {
         name: profile.name,
         last_name: profile.lastName,
         email: profile.email,
-        phone_number: profile.phoneNumber
+        phoneNumber: profile.phoneNumber,
+        status: profile.status
       })
     })
         .then(async res => {

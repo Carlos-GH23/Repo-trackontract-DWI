@@ -1,12 +1,224 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import Swal from 'sweetalert2'
 
 export default function RegistroContrato() {
-  const [habilitado, setHabilitado] = useState(true)
+  const [formData, setFormData] = useState({
+    name: "",
+    client_id: "",
+    category_id: "",
+    due_date: "",
+    description: "",
+    status: true // Added status field
+  })
+  const [clientes, setClientes] = useState([])
+  const [categorias, setCategorias] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const navigate = useNavigate()
+
+  // Cargar clientes y categorías al montar el componente
+  useEffect(() => {
+    fetchClientes()
+    fetchCategorias()
+  }, [])
+
+  // Función para obtener clientes
+  const fetchClientes = async () => {
+    try {
+      const token = localStorage.getItem("accessToken")
+      
+      if (!token) {
+        throw new Error("No hay token de autenticación")
+      }
+
+      const response = await fetch("http://localhost:8080/clients/all", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al obtener clientes")
+      }
+
+      const data = await response.json()
+      if (data.result) {
+        setClientes(data.result)
+      } else {
+        setClientes([])
+      }
+    } catch (err) {
+      console.error("Error al obtener clientes:", err)
+      setError("Error al cargar clientes: " + err.message)
+    }
+  }
+
+  // Función para obtener categorías
+  const fetchCategorias = async () => {
+    try {
+      const token = localStorage.getItem("accessToken")
+      
+      if (!token) {
+        throw new Error("No hay token de autenticación")
+      }
+
+      const response = await fetch("http://localhost:8080/categories/all", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al obtener categorías")
+      }
+
+      const data = await response.json()
+      if (data.result) {
+        setCategorias(data.result)
+      } else {
+        setCategorias([])
+      }
+    } catch (err) {
+      console.error("Error al obtener categorías:", err)
+      setError("Error al cargar categorías: " + err.message)
+    }
+  }
+
+  // Función para manejar cambios en el formulario
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  // Función para enviar el contrato
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    // Validar campos requeridos
+    if (!formData.name || !formData.client_id || !formData.category_id || !formData.due_date) {
+      setError("Por favor completa todos los campos requeridos")
+      return
+    }
+
+    // Confirmar antes de crear
+    const result = await Swal.fire({
+      title: "¿Confirmas crear este contrato?",
+      text: `Se creará el contrato "${formData.name}"`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3B82F6",
+      cancelButtonColor: "#6B7280",
+      confirmButtonText: "Sí, crear",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const token = localStorage.getItem("accessToken")
+      
+      if (!token) {
+        throw new Error("No hay token de autenticación")
+      }
+
+      // Preparar datos para enviar
+      const contratoData = {
+        name: formData.name,
+        description: formData.description,
+        due_date: formData.due_date,
+        status: formData.status, // Use formData.status
+        clientsDTO: {
+          id: parseInt(formData.client_id)
+        },
+        categoriesDTO: {
+          id: parseInt(formData.category_id)
+        }
+      }
+
+      // Debug: Ver qué datos se envían
+      console.log("Datos del formulario:", formData)
+      console.log("Datos a enviar al backend:", contratoData)
+
+      const response = await fetch("http://localhost:8080/contracts/save", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(contratoData)
+      })
+
+      console.log("Respuesta del servidor:", response.status, response.statusText)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.log("Error response body:", errorData)
+        
+        // Extraer el mensaje de error del backend
+        let errorMessage = "Error al crear contrato"
+        if (errorData.message) {
+          errorMessage = errorData.message
+        } else if (errorData.text) {
+          errorMessage = errorData.text
+        } else if (errorData.error) {
+          errorMessage = errorData.error
+        }
+        
+        throw new Error(errorMessage)
+      }
+
+      // Éxito - redirigir a la lista de contratos
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'Contrato creado exitosamente',
+        icon: 'success',
+        confirmButtonText: 'Continuar',
+        confirmButtonColor: '#3B82F6'
+      }).then(() => {
+        navigate("/admin/contratos")
+      })
+      
+    } catch (err) {
+      console.error("Error al crear contrato:", err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const volverAContratos = () => {
     navigate("/admin/contratos")
+  }
+
+  if (error && !clientes.length && !categorias.length) {
+    return (
+      <div className="min-h-screen bg-white p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 text-xl mb-4">Error al cargar datos</div>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => {
+              fetchClientes()
+              fetchCategorias()
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -34,11 +246,11 @@ export default function RegistroContrato() {
           </div>
         </div>
 
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 shadow">
-          <p className="text-sm text-red-700">
-            Completa todos los campos para registrar un nuevo contrato en el sistema *
-          </p>
-        </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 shadow">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
 
         <div className="bg-white rounded-xl shadow-2xl border border-blue-200 overflow-hidden">
           <div className="bg-blue-50 px-6 py-4 border-b border-blue-200">
@@ -52,13 +264,17 @@ export default function RegistroContrato() {
             </h3>
           </div>
 
-          <div className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Contrato *</label>
               <input
                 type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
                 placeholder="Contrato de Servicios Profesionales 2025"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                required
               />
             </div>
 
@@ -66,24 +282,36 @@ export default function RegistroContrato() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
                 <select
+                  name="client_id"
+                  value={formData.client_id}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                  required
                 >
-                  <option>Seleccione un cliente</option>
-                  <option>Empresa ABC S.A. de C.V.</option>
-                  <option>TechCorp Solutions</option>
+                  <option value="">Seleccione un cliente</option>
+                  {clientes.map(cliente => (
+                    <option key={cliente.id} value={cliente.id}>
+                      {cliente.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
                 <select
+                  name="category_id"
+                  value={formData.category_id}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                  required
                 >
-                  <option>Seleccione una categoría</option>
-                  <option>Servicios Profesionales</option>
-                  <option>Mantenimiento</option>
-                  <option>Consultoría</option>
-                  <option>Capacitación</option>
+                  <option value="">Seleccione una categoría</option>
+                  {categorias.map(categoria => (
+                    <option key={categoria.id} value={categoria.id}>
+                      {categoria.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -93,52 +321,84 @@ export default function RegistroContrato() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Vencimiento *</label>
                 <input
                   type="date"
+                  name="due_date"
+                  value={formData.due_date}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                  required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Estado del Contrato *</label>
-                <div className="flex items-center space-x-4 mt-1">
-                  <div
-                    onClick={() => setHabilitado(!habilitado)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer transition-colors duration-300 ${habilitado ? "bg-green-600" : "bg-gray-400"}`}
+                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Descripción detallada del contrato..."
+                  rows="3"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                />
+              </div>
+            </div>
+
+            {/* Estado del Contrato */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Estado del Contrato</span>
+                </div>
+                <div className="flex items-center">
+                  <span className={`text-sm font-medium mr-3 ${formData.status ? 'text-green-600' : 'text-gray-500'}`}>
+                    {formData.status ? 'Habilitado' : 'Deshabilitado'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, status: !prev.status }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      formData.status ? 'bg-green-600' : 'bg-gray-200'
+                    }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${habilitado ? "translate-x-6" : "translate-x-1"}`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${
+                        formData.status ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                     />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {habilitado ? "Habilitado" : "Inhabilitado"}
-                  </span>
+                  </button>
                 </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Descripción del Contrato *</label>
-              <textarea
-                rows={5}
-                placeholder="Describe detalladamente el contrato..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none shadow-sm"
-              />
+            <div className="flex gap-4 pt-6">
+              <button
+                type="button"
+                onClick={volverAContratos}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 shadow-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Creando...
+                  </>
+                ) : (
+                  "Crear Contrato"
+                )}
+              </button>
             </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end space-x-4 mt-8">
-          <button
-            onClick={volverAContratos}
-            className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium shadow"
-          >
-            Cancelar
-          </button>
-          <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2 shadow-md">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Registrar Contrato
-          </button>
+          </form>
         </div>
       </div>
     </div>

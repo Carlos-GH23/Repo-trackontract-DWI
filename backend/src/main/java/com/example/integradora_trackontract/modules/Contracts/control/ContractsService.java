@@ -54,13 +54,29 @@ public class ContractsService {
     //Busqueda de contratos
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findAll() {
-        List<Contracts> contracts = contractsRepository.findAll();
+        List<Object[]> contractsData = contractsRepository.findAllContractsWithBasicInfo();
         logger.info("La búsqueda ha sido realizada correctamente");
-        if (contracts.isEmpty()) {
-            return new ResponseEntity<>(new Message("No hay contratos registrados", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
+        
+        if (contractsData.isEmpty()) {
+            return new ResponseEntity<>(new Message(contractsData, "No hay contratos registrados", TypesResponse.WARNING), HttpStatus.OK);
         }
+        
+        // Convertir Object[] a Map para evitar referencias circulares
+        List<java.util.Map<String, Object>> contracts = contractsData.stream()
+            .map(row -> {
+                java.util.Map<String, Object> contract = new java.util.HashMap<>();
+                contract.put("id", row[0]);
+                contract.put("name", row[1]);
+                contract.put("description", row[2]);
+                contract.put("due_date", row[3]);
+                contract.put("status", row[4]);
+                contract.put("client_id", java.util.Map.of("id", row[5], "name", row[6]));
+                contract.put("category_id", java.util.Map.of("id", row[7], "name", row[8]));
+                return contract;
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
         logger.info("Listado de contratos obtenido correctamente");
-
         return new ResponseEntity<>(new Message(contracts, "Listado de contratos", TypesResponse.SUCCESS), HttpStatus.OK);
     }
 
@@ -71,13 +87,16 @@ public class ContractsService {
         if (existingContracts.isPresent()) {
             return new ResponseEntity<>(new Message("El contrato ya existe", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre del contrato no puede ser nulo o vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
         if (dto.getName().length() > 50) {
             return new ResponseEntity<>(new Message("El nombre del contrato excede los 50 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
-        if (dto.getDescription().length() > 255) {
+        if (dto.getDescription() != null && dto.getDescription().length() > 255) {
             return new ResponseEntity<>(new Message("La descripcion del contrato excede los 255 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
-        if (dto.getDue_date() == null || dto.getDue_date().before(new Date())) {
+        if (dto.getDue_date() == null || dto.getDue_date().before(new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000))) {
             return new ResponseEntity<>(new Message("La fecha de vencimiento del contrato no puede ser nula o anterior a la fecha actual", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
         if (dto.getClientsDTO() == null || dto.getClientsDTO().getId() == null || dto.getClientsDTO().getId() <= 0) {
@@ -108,11 +127,13 @@ public class ContractsService {
         Optional<Contracts> contractsOptional = contractsRepository.findById(dto.getId());
         if (!contractsOptional.isPresent()) {
             return new ResponseEntity<>(new Message("Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre del contrato no puede ser nulo o vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }if (dto.getName().length() > 50) {
             return new ResponseEntity<>(new Message("El nombre del contrato excede los 50 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
-        }if (dto.getDescription().length() > 255) {
+        }if (dto.getDescription() != null && dto.getDescription().length() > 255) {
             return new ResponseEntity<>(new Message("La descripcion del contrato excede los 255 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
-        }if (dto.getDue_date() == null || dto.getDue_date().before(new Date())) {
+        }if (dto.getDue_date() == null || dto.getDue_date().before(new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000))) {
             return new ResponseEntity<>(new Message("La fecha de vencimiento del contrato no puede ser nula o anterior a la fecha actual", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }if (dto.getClientsDTO() == null || dto.getClientsDTO().getId() == null || dto.getClientsDTO().getId() <= 0) {
             return new ResponseEntity<>(new Message("El cliente del contrato no puede ser nulo o no existe", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
@@ -206,16 +227,32 @@ public class ContractsService {
             return new ResponseEntity<>(new Message(contractsOptional.get(), "Contrato encontrado", TypesResponse.SUCCESS), HttpStatus.OK);
         }
 
-        //Busqueda de contratos activos
-        @Transactional(readOnly = true)
-        public ResponseEntity<Message> findAllByStatusIsTrue () {
-            List<Contracts> contracts = contractsRepository.findAllByStatusIsTrue();
-            if (contracts.isEmpty()) {
-                return new ResponseEntity<>(new Message("No hay contratos activos", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
-            }
-            logger.info("Busqueda de contratos activos realizada correctamente");
-            return new ResponseEntity<>(new Message(contracts, "Contratos activos encontradas", TypesResponse.SUCCESS), HttpStatus.OK);
+    //Busqueda de contratos activos
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> findAllByStatusIsTrue () {
+        List<Object[]> contractsData = contractsRepository.findAllContractsByStatusWithBasicInfo(true);
+        if (contractsData.isEmpty()) {
+            return new ResponseEntity<>(new Message(contractsData, "No hay contratos activos", TypesResponse.WARNING), HttpStatus.OK);
         }
+        
+        // Convertir Object[] a Map para evitar referencias circulares
+        List<java.util.Map<String, Object>> contracts = contractsData.stream()
+            .map(row -> {
+                java.util.Map<String, Object> contract = new java.util.HashMap<>();
+                contract.put("id", row[0]);
+                contract.put("name", row[1]);
+                contract.put("description", row[2]);
+                contract.put("due_date", row[3]);
+                contract.put("status", row[4]);
+                contract.put("client_id", java.util.Map.of("id", row[5], "name", row[6]));
+                contract.put("category_id", java.util.Map.of("id", row[7], "name", row[8]));
+                return contract;
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
+        logger.info("Busqueda de contratos activos realizada correctamente");
+        return new ResponseEntity<>(new Message(contracts, "Contratos activos encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
 
         //Scheduled para revisar cuantas contratos estan activas e inactivas
         @Scheduled(cron = "0 0 0 * * ?") // Ejecutar diariamente a medianoche

@@ -85,7 +85,6 @@ const Navbar = () => {
     }
 
 
-
     return (
         <header className={`navbarbo transition-transform duration-300 ${hideNavbar ? "-translate-y-full" : "translate-y-0"}`}>
             <h2 className="icoNo">
@@ -102,5 +101,4 @@ const Navbar = () => {
 
 
 
-
-export default Navbar;
+export default Navbar
