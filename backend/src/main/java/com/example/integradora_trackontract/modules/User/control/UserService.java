@@ -250,6 +250,44 @@ public class UserService {
         logger.info("Usuarios activos: {}, Usuarios inactivos: {}", activeUsers.size(), inactiveUsers.size());
     }
 
+    @Transactional
+    public ResponseEntity<Message> updateMyProfile(String email, UserDTO dto) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (!userOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Usuario no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+
+        User user = userOptional.get();
+
+        // Validaciones básicas
+        if (dto.getName() == null || dto.getName().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getLast_name() == null || dto.getLast_name().isEmpty()) {
+            return new ResponseEntity<>(new Message("El apellido no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getEmail() == null || dto.getEmail().isEmpty()) {
+            return new ResponseEntity<>(new Message("El correo no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getPhoneNumber() == null || dto.getPhoneNumber().isEmpty()) {
+            return new ResponseEntity<>(new Message("El teléfono no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+
+        // Actualizar campos
+        user.setName(dto.getName());
+        user.setLastName(dto.getLast_name());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        //No actualizar el status
+        user.setStatus(dto.getStatus());
+        user.setUpdated_at(LocalDateTime.now());
+
+        userRepository.saveAndFlush(user);
+
+        return new ResponseEntity<>(new Message("Perfil actualizado correctamente", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
+
     //Cambio de contraseña
     public ResponseEntity<Message> changeMyPassword(String email,
                                                     com.example.integradora_trackontract.modules.User.model.ChangePasswordRequest req) {

@@ -85,4 +85,13 @@ public class UserController {
             @Validated @RequestBody ChangePasswordRequest body) {
         return userService.changeMyPassword(ud.getUsername(), body);
     }
+
+    @PutMapping("/me")
+    public ResponseEntity<Message> updateMyProfile(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody UserDTO dto) {
+        return userService.updateMyProfile(userDetails.getUsername(), dto);
+    }
+
+
 }
