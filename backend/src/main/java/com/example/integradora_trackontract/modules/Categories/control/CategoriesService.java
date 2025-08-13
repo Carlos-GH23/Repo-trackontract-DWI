@@ -173,7 +173,7 @@ public class CategoriesService {
     public ResponseEntity<Message> findAllByStatusIsTrue() {
         List<Categories> categories = categoriesRepository.findAllByStatusIsTrue();
         if (categories.isEmpty()) {
-            return new ResponseEntity<>(new Message("No hay categorias activas", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new Message(categories, "No hay categorias activas", TypesResponse.WARNING), HttpStatus.OK);
         }
         logger.info("Busqueda de categorias activas realizada correctamente");
         return new ResponseEntity<>(new Message(categories, "Categorias activas encontradas", TypesResponse.SUCCESS), HttpStatus.OK);

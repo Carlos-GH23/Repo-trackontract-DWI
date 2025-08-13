@@ -94,12 +94,23 @@ const httpClient = {
 export const handleRequest = async (method, url, payload) => {
     try {
         const { status, data } = await httpClient[method](url, payload);
-        return {
-            result: status === 200 ? data.result : null,
-            metadata: status === 200 ? data.metadata : null,
-            type: data.type || 'SUCCESS',
-            text: data.text || 'Operación exitosa'
-        };
+        
+        // Si la respuesta es exitosa (200), devolver los datos directamente
+        if (status === 200) {
+            return {
+                result: data,
+                metadata: null,
+                type: 'SUCCESS',
+                text: 'Operación exitosa'
+            };
+        } else {
+            return {
+                result: null,
+                metadata: null,
+                type: 'ERROR',
+                text: 'Error en la solicitud'
+            };
+        }
     } catch (error) {
         return {
             result: null,

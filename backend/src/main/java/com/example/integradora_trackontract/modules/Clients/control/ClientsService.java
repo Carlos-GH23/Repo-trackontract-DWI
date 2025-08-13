@@ -43,7 +43,7 @@ public class ClientsService {
         List<Clients> clients = clientsRepository.findAll();
         logger.info("La búsqueda ha sido realizada correctamente");
         if(clients.isEmpty()) {
-            return new ResponseEntity<>(new Message("No hay clientes registradas", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new Message(clients, "No hay clientes registradas", TypesResponse.WARNING), HttpStatus.OK);
         }
         logger.info("Listado de clientes obtenido correctamente");
 
@@ -202,10 +202,10 @@ public class ClientsService {
     public ResponseEntity<Message> findAllByStatusIsTrue() {
         List<Clients> clients = clientsRepository.findAllByStatusIsTrue();
         if (clients.isEmpty()) {
-            return new ResponseEntity<>(new Message("No hay clientes activos", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new Message(clients, "No hay clientes activos", TypesResponse.WARNING), HttpStatus.OK);
         }
         logger.info("Busqueda de clientes activos realizada correctamente");
-        return new ResponseEntity<>(new Message(clients, "Clientes activos encontradas", TypesResponse.SUCCESS), HttpStatus.OK);
+        return new ResponseEntity<>(new Message(clients, "Clientes activos encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
     }
 
     //Scheduled para revisar cuantas clientes estan activas e inactivas

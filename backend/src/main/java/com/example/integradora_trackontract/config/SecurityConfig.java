@@ -41,12 +41,32 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req ->
                         req.requestMatchers("/auth/**").permitAll()
 
+                                // Permitir que usuarios autenticados accedan a su propio perfil y funcionalidades básicas
+                                .requestMatchers("/users/me", "/users/me/**")
+                                .authenticated()
+
+                                // Permitir que usuarios autenticados actualicen su propio perfil
+                                .requestMatchers("/users/update")
+                                .authenticated()
+
+                                // Solo ADMIN puede acceder a gestión de usuarios
+                                .requestMatchers("/users/**")
+                                .hasRole("ADMIN")
+
                                 // Solo ADMIN y ABOGADO pueden acceder a gestión de clientes
                                 .requestMatchers("/clients/**")
                                 .hasAnyRole("ADMIN", "ABOGADO")
 
                                 // Solo ADMIN puede acceder a cualquier ruta /admin/**
                                 .requestMatchers("/admin/**")
+                                .hasRole("ADMIN")
+
+                                // Solo ADMIN y ABOGADO pueden acceder a gestión de contratos
+                                .requestMatchers("/contracts/**")
+                                .hasAnyRole("ADMIN", "ABOGADO")
+
+                                // Solo ADMIN puede acceder a gestión de categorías
+                                .requestMatchers("/categories/**")
                                 .hasRole("ADMIN")
 
                                 // Cualquiera autenticado puede acceder al resto

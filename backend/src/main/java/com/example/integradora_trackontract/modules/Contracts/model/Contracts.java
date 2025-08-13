@@ -5,6 +5,7 @@ import com.example.integradora_trackontract.modules.Clients.model.Clients;
 import com.example.integradora_trackontract.modules.Contract_Approvals.model.Contract_Approvals;
 import com.example.integradora_trackontract.modules.User_Contracts.model.User_Contracts;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;

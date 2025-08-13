@@ -27,9 +27,6 @@ import Contrats from "../modules/companies/views/Contrats"
 import CategoriasInactivas from "../modules/admin/views/CategoriasInactivas";
 import CategoriasActivas from "../modules/admin/views/CategoriasActivas";
 
-
-
-
 const AppRouter = () => {
   return (
     <BrowserRouter>
@@ -79,6 +76,5 @@ const AppRouter = () => {
       </BrowserRouter>
   )
 }
-
 
 export default AppRouter;

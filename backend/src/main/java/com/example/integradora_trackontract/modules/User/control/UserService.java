@@ -60,7 +60,7 @@ public class UserService {
         List<User> users = userRepository.findAll();
         logger.info("La búsqueda ha sido realizada correctamente");
         if (users.isEmpty()) {
-            return new ResponseEntity<>(new Message("No hay usuarios registrados", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new Message(users, "No hay usuarios registrados", TypesResponse.WARNING), HttpStatus.OK);
         }
         logger.info("Listado de usuarios obtenido correctamente");
 
@@ -149,6 +149,10 @@ public class UserService {
             return new ResponseEntity<>(new Message("El número de teléfono del usuario excede los 15 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
 
+        if (dto.getStatus() == null) {
+            return new ResponseEntity<>(new Message("El estado del usuario no puede ser nulo", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+
         User user = userOptional.get();
 
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
@@ -220,13 +224,13 @@ public class UserService {
 
     //Busqueda de usuarios activos
     @Transactional(readOnly = true)
-    public ResponseEntity<Message> findAllByStatusIsTrue () {
+    public ResponseEntity<Message> findAllByStatusIsTrue() {
         List<User> users = userRepository.findAllByStatusIsTrue();
         if (users.isEmpty()) {
-            return new ResponseEntity<>(new Message("No hay usuarios activos", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new Message(users, "No hay usuarios activos", TypesResponse.WARNING), HttpStatus.OK);
         }
         logger.info("Busqueda de usuarios activos realizada correctamente");
-        return new ResponseEntity<>(new Message(users, "Usuarios activos encontradas", TypesResponse.SUCCESS), HttpStatus.OK);
+        return new ResponseEntity<>(new Message(users, "Usuarios activos encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
     }
     public UserProfileDTO getProfile(String email) {
         User user = userRepository.findByEmail(email)

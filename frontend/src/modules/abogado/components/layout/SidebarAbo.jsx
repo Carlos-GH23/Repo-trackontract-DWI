@@ -57,7 +57,7 @@ const SidebarAbo = ({ isCollapsed, setIsCollapsed }) => {
                 ))}
             </nav>
 
-            <div className="mt-auto p-2">
+            <div className="mt-auto p-1">
                 <div className="mt-auto">
                     <button
                         onClick={handleLogout}
