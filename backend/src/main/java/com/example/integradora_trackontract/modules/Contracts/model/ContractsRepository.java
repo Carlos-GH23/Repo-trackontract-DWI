@@ -59,4 +59,9 @@ public interface ContractsRepository extends JpaRepository<Contracts, Long> {
     int countByStatusIsTrue();
 
     int countByStatusIsFalse();
+    
+    // Métodos para el nuevo sistema de estados
+    List<Contracts> findByContractStatus(ContractStatus contractStatus);
+    List<Contracts> findByContractStatusAndStatus(ContractStatus contractStatus, Boolean status);
+    int countByContractStatus(ContractStatus contractStatus);
 }

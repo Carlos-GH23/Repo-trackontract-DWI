@@ -80,6 +80,11 @@ public class ContractsController {
         return contractsService.findAllByAbogado(abogadoId);
     }
 
+    @GetMapping("/empresas-by-abogado/{abogadoId}")
+    public ResponseEntity<Message> getEmpresasByAbogado(@PathVariable Long abogadoId) {
+        return contractsService.getEmpresasByAbogado(abogadoId);
+    }
+
     @PostMapping("/{contractId}/accept")
     public ResponseEntity<Message> acceptContract(@PathVariable Long contractId, @RequestParam Long abogadoId) {
         return contractsService.acceptContract(contractId, abogadoId);

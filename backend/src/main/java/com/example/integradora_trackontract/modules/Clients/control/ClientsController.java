@@ -67,4 +67,22 @@ public class ClientsController {
         return clientsService.findAllByStatusIsTrue();
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<Message> getMyProfile(@RequestParam String email) {
+        System.out.println("Endpoint /clients/me llamado con email: " + email);
+        return clientsService.getProfileByEmail(email);
+    }
+
+    @PutMapping("/me/profile")
+    public ResponseEntity<Message> updateMyProfile(@RequestParam String email, @RequestBody ClientsDTO dto) {
+        return clientsService.updateProfile(email, dto);
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Message> updateMyPassword(@RequestParam String email, @RequestBody java.util.Map<String, String> body) {
+        String newPassword = body.get("newPassword");
+        String confirmPassword = body.get("confirmPassword");
+        return clientsService.updatePassword(email, newPassword, confirmPassword);
+    }
+
 }

@@ -1,5 +1,6 @@
 import "../../../styles/perfil.styles.css";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 const ProfileAbo = () => {
   const [profile, setProfile] = useState({
@@ -14,6 +15,12 @@ const ProfileAbo = () => {
 
   const [editMode, setEditMode] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -51,6 +58,15 @@ const ProfileAbo = () => {
     }));
   };
 
+  const handlePasswordChange = e => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setPasswordError(""); // Limpiar error al escribir
+  };
+
   const handleSave = () => {
     setErrorMsg(""); // limpiar errores
 
@@ -86,7 +102,13 @@ const ProfileAbo = () => {
         })
         .then(() => {
           setEditMode(false);
-          alert("Perfil actualizado con éxito");
+          Swal.fire({
+            icon: "success",
+            title: "¡Éxito!",
+            text: "Perfil actualizado con éxito",
+            timer: 2000,
+            showConfirmButton: false
+          });
         })
         .catch(err => {
           console.error(err);
@@ -94,9 +116,81 @@ const ProfileAbo = () => {
         });
   };
 
+  const handlePasswordChangeSubmit = async () => {
+    setPasswordError("");
+
+    // Validaciones
+    if (!passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError("Todos los campos son obligatorios.");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("Las contraseñas nuevas no coinciden.");
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError("La nueva contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+          try {
+        const token = localStorage.getItem("accessToken");
+        const response = await fetch("http://localhost:8080/users/me/password/update", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            newPassword: passwordData.newPassword,
+            confirmPassword: passwordData.confirmPassword
+          })
+        });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.text || "Error al cambiar la contraseña");
+      }
+
+      // Éxito
+      Swal.fire({
+        icon: "success",
+        title: "¡Contraseña actualizada!",
+        text: "Tu contraseña ha sido cambiada exitosamente.",
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+        closePasswordModal();
+      });
+
+    } catch (error) {
+      setPasswordError(error.message);
+    }
+  };
+
+  const openPasswordModal = () => {
+    setShowPasswordModal(true);
+    setPasswordData({
+      newPassword: "",
+      confirmPassword: ""
+    });
+    setPasswordError("");
+  };
+
+  const closePasswordModal = () => {
+    setShowPasswordModal(false);
+    setPasswordData({
+      newPassword: "",
+      confirmPassword: ""
+    });
+    setPasswordError("");
+  };
+
   return (
       <div className="datos">
-        <h2 className="titulo">Datos del Admin</h2>
+        <h2 className="titulo">Perfil del Abogado</h2>
 
         <div className="contenido">
           <div className="info">
@@ -108,7 +202,7 @@ const ProfileAbo = () => {
                   name="name"
                   value={profile.name}
                   onChange={handleChange}
-                  readOnly={editMode}
+                  readOnly={!editMode}
               />
             </div>
             <div className="campo">
@@ -119,7 +213,7 @@ const ProfileAbo = () => {
                   name="lastName"
                   value={profile.lastName}
                   onChange={handleChange}
-                  readOnly={editMode}
+                  readOnly={!editMode}
               />
             </div>
             <div className="campo">
@@ -130,7 +224,7 @@ const ProfileAbo = () => {
                   name="email"
                   value={profile.email}
                   onChange={handleChange}
-                  readOnly={editMode}
+                  readOnly={!editMode}
               />
             </div>
           </div>
@@ -144,7 +238,7 @@ const ProfileAbo = () => {
                   name="phoneNumber"
                   value={profile.phoneNumber}
                   onChange={handleChange}
-                  readOnly={editMode}
+                  readOnly={!editMode}
               />
             </div>
             <div className="campo">
@@ -154,7 +248,7 @@ const ProfileAbo = () => {
           </div>
         </div>
 
-        {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+        {errorMsg && <p style={{ color: "red", textAlign: "center", margin: "10px 0" }}>{errorMsg}</p>}
 
         <div className="boton-container">
           {editMode ? (
@@ -167,11 +261,65 @@ const ProfileAbo = () => {
                 </button>
               </>
           ) : (
-              <button className="btn" onClick={() => setEditMode(true)}>
-                Editar
-              </button>
+              <>
+                <button className="btn" onClick={() => setEditMode(true)}>
+                  Editar Perfil
+                </button>
+                <button className="btn" onClick={openPasswordModal} style={{ marginLeft: "10px", backgroundColor: "#28a745" }}>
+                  Nueva Contraseña
+                </button>
+              </>
           )}
         </div>
+
+        {/* Modal de Cambio de Contraseña */}
+        {showPasswordModal && (
+            <div className="password-modal-overlay" onClick={closePasswordModal}>
+                              <div className="password-modal" onClick={(e) => e.stopPropagation()}>
+                  <h3>Nueva Contraseña</h3>
+                
+                <div className="fila-contrasenas">
+                  <div className="campo">
+                    <label htmlFor="newPassword">Nueva Contraseña:</label>
+                    <input
+                      type="password"
+                      id="newPassword"
+                      name="newPassword"
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                      placeholder="Mínimo 8 caracteres"
+                    />
+                  </div>
+                  <div className="campo">
+                    <label htmlFor="confirmPassword">Confirmar Nueva Contraseña:</label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={passwordData.confirmPassword}
+                      onChange={handlePasswordChange}
+                      placeholder="Repite la nueva contraseña"
+                    />
+                  </div>
+                </div>
+
+                {passwordError && (
+                  <p style={{ color: "red", textAlign: "center", margin: "10px 0", fontSize: "14px" }}>
+                    {passwordError}
+                  </p>
+                )}
+
+                <div className="boton-container1">
+                                  <button className="btn" onClick={handlePasswordChangeSubmit}>
+                  Actualizar Contraseña
+                </button>
+                  <button className="btn" onClick={closePasswordModal} style={{ marginLeft: "10px", backgroundColor: "#6c757d" }}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
       </div>
   );
 };
