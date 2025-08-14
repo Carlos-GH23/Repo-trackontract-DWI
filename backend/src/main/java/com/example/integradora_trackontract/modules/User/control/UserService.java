@@ -109,7 +109,7 @@ public class UserService {
 
         Roles role = new Roles();
         role.setId(2L);
-        User user = new User(dto.getName(), dto.getLast_name(), dto.getEmail(), dto.getPhoneNumber(), hashedPassword, true, LocalDateTime.now(), LocalDateTime.now(), 0, null, null, null, null, role);
+        User user = new User(dto.getName(), dto.getLast_name(), dto.getEmail(), dto.getPhoneNumber(), hashedPassword, true, LocalDateTime.now(), LocalDateTime.now(), 0, null, null, null, null, null, role);
         user = userRepository.saveAndFlush(user);
         if (user == null) {
             return new ResponseEntity<>(new Message("El usuario no se registró", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
