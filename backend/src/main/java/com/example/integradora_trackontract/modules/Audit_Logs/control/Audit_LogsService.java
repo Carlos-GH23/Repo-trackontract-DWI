@@ -6,8 +6,11 @@ import com.example.integradora_trackontract.modules.User.model.User;
 import com.example.integradora_trackontract.modules.User.model.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -24,13 +27,14 @@ public class Audit_LogsService {
                     Integer status) {
 
         User user = null;
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
             user = userRepo.findByEmail(auth.getName()).orElse(null);
         }
 
         Audit_Logs log = new Audit_Logs();
-        log.setUser_id(user);
+        log.setUser_id(user); // usuario real
         log.setAction(action);
         log.setEntityName(entityName);
         log.setEntityId(entityId);
@@ -40,6 +44,7 @@ public class Audit_LogsService {
         log.setIp(req.getRemoteAddr());
         log.setUserAgent(req.getHeader("User-Agent"));
         log.setStatus(status);
+        log.setCreated_at(LocalDateTime.now()); // ✅ fecha correcta
 
         repo.save(log);
     }

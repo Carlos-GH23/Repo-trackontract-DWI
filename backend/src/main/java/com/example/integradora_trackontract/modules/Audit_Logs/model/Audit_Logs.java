@@ -1,7 +1,6 @@
 package com.example.integradora_trackontract.modules.Audit_Logs.model;
 
 import com.example.integradora_trackontract.modules.User.model.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -10,17 +9,18 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "audit_logs")
 public class Audit_Logs {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "entity_name", columnDefinition = "VARCHAR(50)", nullable = false)
+    @Column(name = "entity_name", nullable = false)
     private String entityName;
 
     @Column(name = "entity_id")
     private Long entityId;
 
-    @Column(name = "action", columnDefinition = "VARCHAR(50)", nullable = false)
+    @Column(name = "action", nullable = false)
     private String action;
 
     @Column(name = "details", columnDefinition = "TEXT")
@@ -42,107 +42,53 @@ public class Audit_Logs {
     private String userAgent;
 
     @CreationTimestamp
-    @Column(name = "timestamp", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", updatable = false)
+    @Column(name = "timestamp", updatable = false)
     private LocalDateTime timestamp;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(name = "created_at")
+    private LocalDateTime created_at;
+
+    @ManyToOne(fetch = FetchType.EAGER) // <- Cambiado a EAGER
     @JoinColumn(name = "user_id")
-    @JsonIgnore
     private User user_id;
 
-    public Long getId() {
-        return id;
-    }
+    // Getters y Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getEntityName() { return entityName; }
+    public void setEntityName(String entityName) { this.entityName = entityName; }
 
-    public String getEntityName() {
-        return entityName;
-    }
+    public Long getEntityId() { return entityId; }
+    public void setEntityId(Long entityId) { this.entityId = entityId; }
 
-    public void setEntityName(String entityName) {
-        this.entityName = entityName;
-    }
+    public String getAction() { return action; }
+    public void setAction(String action) { this.action = action; }
 
-    public Long getEntityId() {
-        return entityId;
-    }
+    public String getDetails() { return details; }
+    public void setDetails(String details) { this.details = details; }
 
-    public void setEntityId(Long entityId) {
-        this.entityId = entityId;
-    }
+    public String getMethod() { return method; }
+    public void setMethod(String method) { this.method = method; }
 
-    public String getAction() {
-        return action;
-    }
+    public String getPath() { return path; }
+    public void setPath(String path) { this.path = path; }
 
-    public void setAction(String action) {
-        this.action = action;
-    }
+    public Integer getStatus() { return status; }
+    public void setStatus(Integer status) { this.status = status; }
 
-    public String getDetails() {
-        return details;
-    }
+    public String getIp() { return ip; }
+    public void setIp(String ip) { this.ip = ip; }
 
-    public void setDetails(String details) {
-        this.details = details;
-    }
+    public String getUserAgent() { return userAgent; }
+    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
 
-    public String getMethod() {
-        return method;
-    }
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 
-    public void setMethod(String method) {
-        this.method = method;
-    }
+    public User getUser_id() { return user_id; }
+    public void setUser_id(User user_id) { this.user_id = user_id; }
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public String getUserAgent() {
-        return userAgent;
-    }
-
-    public void setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public User getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(User user_id) {
-        this.user_id = user_id;
-    }
+    public LocalDateTime getCreated_at() { return created_at; }
+    public void setCreated_at(LocalDateTime created_at) { this.created_at = created_at; }
 }
