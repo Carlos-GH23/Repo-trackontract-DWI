@@ -3,6 +3,7 @@ package com.example.integradora_trackontract.modules.Contracts.model;
 import com.example.integradora_trackontract.modules.Categories.model.Categories;
 import com.example.integradora_trackontract.modules.Categories.model.CategoriesDTO;
 import com.example.integradora_trackontract.modules.Clients.model.ClientsDTO;
+import com.example.integradora_trackontract.modules.User.model.UserDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -25,16 +26,25 @@ public class ContractsDTO {
     @NotNull(groups = {Register.class, ChangeStatus.class})
     private Boolean status;
 
+    private String approvalStatus;
+
+    private String approvedAt;
+
+    private String rejectionReason;
+
     @NotNull(groups = {Register.class, Modify.class}, message = "El cliente no puede ser nulo")
     private ClientsDTO clientsDTO;
 
     @NotNull(groups = {Register.class, Modify.class}, message = "La categoria no puede ser nula")
     private CategoriesDTO categoriesDTO;
 
+    @NotNull(groups = {Register.class, Modify.class}, message = "El abogado no puede ser nulo")
+    private UserDTO abogadoDTO;
+
     public ContractsDTO() {
     }
 
-    public ContractsDTO(Long id, String name, String description, Date due_date, Boolean status, ClientsDTO clientsDTO, CategoriesDTO categoriesDTO) {
+    public ContractsDTO(Long id, String name, String description, Date due_date, Boolean status, ClientsDTO clientsDTO, CategoriesDTO categoriesDTO, UserDTO abogadoDTO) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -42,15 +52,17 @@ public class ContractsDTO {
         this.status = status;
         this.clientsDTO = clientsDTO;
         this.categoriesDTO = categoriesDTO;
+        this.abogadoDTO = abogadoDTO;
     }
 
-    public ContractsDTO(String name, String description, Date due_date, Boolean status, ClientsDTO clientsDTO, CategoriesDTO categoriesDTO) {
+    public ContractsDTO(String name, String description, Date due_date, Boolean status, ClientsDTO clientsDTO, CategoriesDTO categoriesDTO, UserDTO abogadoDTO) {
         this.name = name;
         this.description = description;
         this.due_date = due_date;
         this.status = status;
         this.clientsDTO = clientsDTO;
         this.categoriesDTO = categoriesDTO;
+        this.abogadoDTO = abogadoDTO;
     }
 
     public Long getId() {
@@ -107,6 +119,38 @@ public class ContractsDTO {
 
     public void setCategoriesDTO(CategoriesDTO categoriesDTO) {
         this.categoriesDTO = categoriesDTO;
+    }
+
+    public UserDTO getAbogadoDTO() {
+        return abogadoDTO;
+    }
+
+    public void setAbogadoDTO(UserDTO abogadoDTO) {
+        this.abogadoDTO = abogadoDTO;
+    }
+
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public String getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(String approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     public interface Register {}

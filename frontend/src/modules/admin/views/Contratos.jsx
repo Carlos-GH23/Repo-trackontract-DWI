@@ -92,7 +92,7 @@ export default function Contratos() {
     Swal.fire({
       title: contrato.name,
       html: `
-        <div class="text-left space-y-3">
+        <div class="text-left space-y-3 max-w-full">
           <div class="flex items-center justify-between">
             <span class="font-semibold text-gray-700">Estado:</span>
             <span class="px-2 py-1 text-xs rounded-full font-medium ${
@@ -101,13 +101,39 @@ export default function Contratos() {
               ${contrato.status ? "Activo" : "Inactivo"}
             </span>
           </div>
+          ${contrato.approvalStatus ? `
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-gray-700">Estado de Aprobación:</span>
+            <span class="px-2 py-1 text-xs rounded-full font-medium ${
+              contrato.approvalStatus === 'ACEPTADO' ? "bg-blue-100 text-blue-800" :
+              contrato.approvalStatus === 'RECHAZADO' ? "bg-red-100 text-red-800" :
+              "bg-yellow-100 text-yellow-800"
+            }">
+              ${contrato.approvalStatus === 'ACEPTADO' ? 'Aceptado' :
+               contrato.approvalStatus === 'RECHAZADO' ? 'Rechazado' :
+               'Pendiente'}
+            </span>
+          </div>
+          ` : `
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-gray-700">Estado de Aprobación:</span>
+            <span class="px-2 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-800">
+              Pendiente
+            </span>
+          </div>
+          `}
           <div>
             <span class="font-semibold text-gray-700">Cliente:</span>
-            <p class="text-gray-600 mt-1">${contrato.client_id?.name || "N/A"}</p>
+            <p class="text-gray-600 mt-1 break-words">${contrato.client_id?.name || "N/A"}</p>
           </div>
           <div>
             <span class="font-semibold text-gray-700">Categoría:</span>
-            <p class="text-gray-600 mt-1">${contrato.category_id?.name || "N/A"}</p>
+            <p class="text-gray-600 mt-1 break-words">${contrato.category_id?.name || "N/A"}</p>
+          </div>
+          <div>
+            <span class="font-semibold text-gray-700">Abogado:</span>
+            <p class="text-gray-600 mt-1 break-words">${contrato.abogado_id?.name && contrato.abogado_id?.lastName ? 
+              `${contrato.abogado_id.name} ${contrato.abogado_id.lastName}` : "N/A"}</p>
           </div>
           <div>
             <span class="font-semibold text-gray-700">Fecha de Vencimiento:</span>
@@ -115,14 +141,14 @@ export default function Contratos() {
           </div>
           <div>
             <span class="font-semibold text-gray-700">Descripción:</span>
-            <p class="text-gray-600 mt-1">${contrato.description || "Sin descripción"}</p>
+            <p class="text-gray-600 mt-1 break-words overflow-hidden">${contrato.description || "Sin descripción"}</p>
           </div>
         </div>
       `,
       icon: "info",
       confirmButtonText: "Cerrar",
       confirmButtonColor: "#3B82F6",
-      width: "500px",
+      width: "600px",
       customClass: {
         popup: "rounded-xl",
         title: "text-xl font-bold text-gray-800",
@@ -199,29 +225,54 @@ export default function Contratos() {
         {contratosFiltrados.length === 0 ? (
             <p className="text-center text-gray-500 text-lg">No hay contratos registrados.</p>
         ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
               {contratosFiltrados.map((contrato) => (
                   <div
                       key={contrato.id}
-                      className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border border-gray-200"
+                      className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border border-gray-200 max-w-full"
                   >
-                    <div className="p-6">
+                    <div className="p-6 max-w-full">
                       <div className="flex justify-between items-start mb-2">
                         <h2 className="text-lg font-semibold text-gray-800">{contrato.name}</h2>
-                        <span
-                            className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                contrato.status ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"
-                            }`}
-                        >
-                          {contrato.status ? "Activo" : "Inactivo"}
-                        </span>
+                        <div className="flex flex-col items-end gap-2">
+                          <span
+                              className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                  contrato.status ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"
+                              }`}
+                          >
+                            {contrato.status ? "Activo" : "Inactivo"}
+                          </span>
+                          {contrato.approvalStatus && (
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              contrato.approvalStatus === 'ACEPTADO' ? "bg-blue-100 text-blue-800" :
+                              contrato.approvalStatus === 'RECHAZADO' ? "bg-red-100 text-red-800" :
+                              "bg-yellow-100 text-yellow-800"
+                            }`}>
+                              {contrato.approvalStatus === 'ACEPTADO' ? 'Aceptado' :
+                               contrato.approvalStatus === 'RECHAZADO' ? 'Rechazado' :
+                               'Pendiente'}
+                            </span>
+                          )}
+                          {!contrato.approvalStatus && (
+                            <span className="text-xs px-2 py-1 rounded-full font-medium bg-yellow-100 text-yellow-800">
+                              Pendiente
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="text-sm text-gray-600 mb-4 space-y-1">
                         <p><strong>Cliente:</strong> {contrato.client_id?.name || "N/A"}</p>
                         <p><strong>Categoría:</strong> {contrato.category_id?.name || "N/A"}</p>
+                        <p><strong>Abogado:</strong> {contrato.abogado_id?.name && contrato.abogado_id?.lastName ? 
+                          `${contrato.abogado_id.name} ${contrato.abogado_id.lastName}` : "N/A"}</p>
                         <p><strong>Vencimiento:</strong> {contrato.due_date ? new Date(contrato.due_date).toLocaleDateString() : "N/A"}</p>
-                        <p><strong>Descripción:</strong> {contrato.description || "Sin descripción"}</p>
+                        <div className="break-words">
+                          <strong>Descripción:</strong> 
+                          <p className="text-gray-600 mt-1 break-words overflow-hidden">
+                            {contrato.description || "Sin descripción"}
+                          </p>
+                        </div>
                       </div>
 
                       <div className="flex gap-3">

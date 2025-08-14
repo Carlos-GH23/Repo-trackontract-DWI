@@ -3,6 +3,10 @@ package com.example.integradora_trackontract.modules.Clients.control;
 import com.example.integradora_trackontract.modules.Clients.model.Clients;
 import com.example.integradora_trackontract.modules.Clients.model.ClientsDTO;
 import com.example.integradora_trackontract.modules.Clients.model.ClientsRepository;
+import com.example.integradora_trackontract.modules.User.model.User;
+import com.example.integradora_trackontract.modules.User.model.UserRepository;
+import com.example.integradora_trackontract.modules.Roles.model.Roles;
+import com.example.integradora_trackontract.modules.Roles.model.RolesRepository;
 import com.example.integradora_trackontract.utils.Message;
 import com.example.integradora_trackontract.utils.TypesResponse;
 import org.slf4j.Logger;
@@ -11,10 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,10 +30,17 @@ public class ClientsService {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientsService.class);
     private final ClientsRepository clientsRepository;
+    private final UserRepository userRepository;
+    private final RolesRepository rolesRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public ClientsService(ClientsRepository clientsRepository) {
-        this.clientsRepository= clientsRepository;
+    public ClientsService(ClientsRepository clientsRepository, UserRepository userRepository, 
+                        RolesRepository rolesRepository, PasswordEncoder passwordEncoder) {
+        this.clientsRepository = clientsRepository;
+        this.userRepository = userRepository;
+        this.rolesRepository = rolesRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     //Busqueda de clientes inactivos
@@ -72,10 +85,69 @@ public class ClientsService {
         }if(dto.getStatus() == null) {
             return new ResponseEntity<>(new Message("El estado del cliente no puede ser nulo", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
+        
+        // Crear el cliente
         Clients clients = new Clients(dto.getName(), dto.getBusiness_name(), dto.getRepresentative_name(),
                 dto.getRepresentative_surnames(), dto.getEmail(), dto.getPhone(), true);
         clients.setStatus(true);
         clients = clientsRepository.saveAndFlush(clients);
+        
+        if(clients == null) {
+            return new ResponseEntity<>(new Message("El cliente no se registró", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
+        }
+        
+        // Crear automáticamente el usuario para el cliente
+        try {
+            logger.info("Iniciando creación automática de usuario para cliente: {}", dto.getEmail());
+            
+            // Buscar el rol CLIENT
+            Optional<Roles> clientRole = rolesRepository.findByName("CLIENT");
+            if (!clientRole.isPresent()) {
+                logger.warn("Rol CLIENT no encontrado, no se pudo crear el usuario automáticamente");
+            } else {
+                logger.info("Rol CLIENT encontrado: {} (ID: {})", clientRole.get().getName(), clientRole.get().getId());
+                
+                // Generar contraseña: nombre123
+                String password = dto.getRepresentative_name() + "123";
+                String encodedPassword = passwordEncoder.encode(password);
+                logger.info("Contraseña generada para usuario: {} -> Encriptada: {}", password, encodedPassword);
+                
+                // Crear el usuario
+                User user = new User();
+                user.setName(dto.getRepresentative_name());
+                user.setLastName(dto.getRepresentative_surnames());
+                user.setEmail(dto.getEmail());
+                user.setPhoneNumber(dto.getPhone());
+                user.setPassword(encodedPassword);
+                user.setStatus(true);
+                user.setCreated_at(LocalDateTime.now());
+                user.setUpdated_at(LocalDateTime.now());
+                user.setLogin_attempts(0);
+                user.setRol_id(clientRole.get());
+                
+                logger.info("Usuario creado en memoria: {} con rol: {}", user.getEmail(), user.getRol_id().getName());
+                
+                User savedUser = userRepository.saveAndFlush(user);
+                logger.info("Usuario guardado en BD con ID: {} y email: {}", savedUser.getId(), savedUser.getEmail());
+                
+                // Verificar que se guardó correctamente
+                Optional<User> verifyUser = userRepository.findByEmail(dto.getEmail());
+                if (verifyUser.isPresent()) {
+                    User verifiedUser = verifyUser.get();
+                    logger.info("Usuario verificado en BD - ID: {}, Email: {}, Rol: {}, Status: {}", 
+                        verifiedUser.getId(), verifiedUser.getEmail(), 
+                        verifiedUser.getRol_id().getName(), verifiedUser.isStatus());
+                } else {
+                    logger.error("ERROR: Usuario no se pudo verificar después de guardar");
+                }
+                
+                logger.info("Usuario creado automáticamente para el cliente: {}", dto.getEmail());
+            }
+        } catch (Exception e) {
+            logger.error("Error al crear usuario automáticamente para el cliente: {}", e.getMessage(), e);
+            // No fallar la creación del cliente por un error en la creación del usuario
+        }
+        
         ClientsDTO saveDTO = new ClientsDTO(
                 clients.getId(),
                 clients.getName(),
@@ -86,9 +158,7 @@ public class ClientsService {
                 clients.getPhone(),
                 clients.isStatus()
         );
-        if(clients == null) {
-            return new ResponseEntity<>(new Message("El cliente no se registró", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
-        }
+        
         logger.info("El registro ha sido realizado correctamente");
         return new ResponseEntity<>(new Message(saveDTO,"El cliente se registró correctamente", TypesResponse.SUCCESS), HttpStatus.CREATED);
     }

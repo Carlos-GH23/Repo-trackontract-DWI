@@ -7,20 +7,23 @@ export default function RegistroContrato() {
     name: "",
     client_id: "",
     category_id: "",
+    abogado_id: "", // Agregar campo para abogado
     due_date: "",
     description: "",
     status: true // Added status field
   })
   const [clientes, setClientes] = useState([])
   const [categorias, setCategorias] = useState([])
+  const [abogados, setAbogados] = useState([]) // Agregar estado para abogados
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
 
-  // Cargar clientes y categorías al montar el componente
+  // Cargar clientes, categorías y abogados al montar el componente
   useEffect(() => {
     fetchClientes()
     fetchCategorias()
+    fetchAbogados() // Agregar llamada para obtener abogados
   }, [])
 
   // Función para obtener clientes
@@ -89,13 +92,50 @@ export default function RegistroContrato() {
     }
   }
 
+  // Función para obtener abogados
+  const fetchAbogados = async () => {
+    try {
+      const token = localStorage.getItem("accessToken")
+      
+      if (!token) {
+        throw new Error("No hay token de autenticación")
+      }
+
+      const response = await fetch("http://localhost:8080/users/by-role/ABOGADO", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al obtener abogados")
+      }
+
+      const data = await response.json()
+      if (data.result) {
+        setAbogados(data.result)
+      } else {
+        setAbogados([])
+      }
+    } catch (err) {
+      console.error("Error al obtener abogados:", err)
+      setError("Error al cargar abogados: " + err.message)
+    }
+  }
+
   // Función para manejar cambios en el formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    
+    setFormData(prev => {
+      const newState = {
+        ...prev,
+        [name]: value
+      }
+      return newState
+    })
   }
 
   // Función para enviar el contrato
@@ -143,12 +183,11 @@ export default function RegistroContrato() {
         },
         categoriesDTO: {
           id: parseInt(formData.category_id)
+        },
+        abogadoDTO: {
+          id: parseInt(formData.abogado_id)
         }
       }
-
-      // Debug: Ver qué datos se envían
-      console.log("Datos del formulario:", formData)
-      console.log("Datos a enviar al backend:", contratoData)
 
       const response = await fetch("http://localhost:8080/contracts/save", {
         method: "POST",
@@ -158,8 +197,6 @@ export default function RegistroContrato() {
         },
         body: JSON.stringify(contratoData)
       })
-
-      console.log("Respuesta del servidor:", response.status, response.statusText)
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -278,7 +315,7 @@ export default function RegistroContrato() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
                 <select
@@ -310,6 +347,24 @@ export default function RegistroContrato() {
                   {categorias.map(categoria => (
                     <option key={categoria.id} value={categoria.id}>
                       {categoria.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Abogado *</label>
+                <select
+                  name="abogado_id"
+                  value={formData.abogado_id}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                  required
+                >
+                  <option value="">Seleccione un abogado</option>
+                  {abogados.map(abogado => (
+                    <option key={abogado.id} value={abogado.id}>
+                      {abogado.name} {abogado.lastName}
                     </option>
                   ))}
                 </select>

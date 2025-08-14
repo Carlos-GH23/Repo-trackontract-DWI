@@ -70,6 +70,17 @@ public class UserController {
         return userService.findAllByStatusIsTrue();
     }
 
+    @GetMapping("/by-role/{roleName}")
+    public ResponseEntity<Message> getUsersByRole(@PathVariable String roleName) {
+        return userService.findAllByRole(roleName);
+    }
+
+    // Endpoint temporal para debuggear usuarios CLIENT
+    @GetMapping("/debug/clients")
+    public ResponseEntity<Message> debugClients() {
+        return userService.findAllByRole("CLIENT");
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserProfileDTO> me(
             @AuthenticationPrincipal UserDetails userDetails

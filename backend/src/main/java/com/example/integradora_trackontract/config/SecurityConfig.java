@@ -61,7 +61,19 @@ public class SecurityConfig {
                                 .requestMatchers("/admin/**")
                                 .hasRole("ADMIN")
 
-                                // Solo ADMIN y ABOGADO pueden acceder a gestión de contratos
+                                // Permitir que los clientes accedan a sus propios contratos (ANTES de la regla general)
+                                .requestMatchers("/contracts/by-client/**")
+                                .hasRole("CLIENT")
+
+                                // Permitir que los clientes accedan a sus contratos por email
+                                .requestMatchers("/contracts/by-user-email")
+                                .hasRole("CLIENT")
+
+                                // Permitir que los clientes descarguen PDFs de sus contratos
+                                .requestMatchers("/contracts/*/pdf")
+                                .hasRole("CLIENT")
+
+                                // Solo ADMIN y ABOGADO pueden acceder a gestión de contratos (DESPUÉS de la específica)
                                 .requestMatchers("/contracts/**")
                                 .hasAnyRole("ADMIN", "ABOGADO")
 

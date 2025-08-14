@@ -226,12 +226,26 @@ public class UserService {
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findAllByStatusIsTrue() {
         List<User> users = userRepository.findAllByStatusIsTrue();
+        logger.info("Buscando usuarios con estado activo");
         if (users.isEmpty()) {
             return new ResponseEntity<>(new Message(users, "No hay usuarios activos", TypesResponse.WARNING), HttpStatus.OK);
         }
         logger.info("Busqueda de usuarios activos realizada correctamente");
         return new ResponseEntity<>(new Message(users, "Usuarios activos encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
     }
+
+    // Buscar usuarios por rol específico (ej: ABOGADO)
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> findAllByRole(String roleName) {
+        List<User> users = userRepository.findAllByRoleNameAndStatusActive(roleName);
+        logger.info("Buscando usuarios con rol: {}", roleName);
+        if (users.isEmpty()) {
+            return new ResponseEntity<>(new Message(users, "No hay usuarios con rol " + roleName, TypesResponse.WARNING), HttpStatus.OK);
+        }
+        logger.info("Usuarios con rol {} encontrados correctamente", roleName);
+        return new ResponseEntity<>(new Message(users, "Usuarios con rol " + roleName + " encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
     public UserProfileDTO getProfile(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(email));
