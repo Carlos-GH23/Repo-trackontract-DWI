@@ -81,6 +81,9 @@ public class SecurityConfig {
                                 .requestMatchers("/categories/**")
                                 .hasRole("ADMIN")
 
+                                // Solo ADMIN puede acceder a Audit_Logs
+                                .requestMatchers("/audit-logs/**").hasRole("ADMIN")
+
                                 // Cualquiera autenticado puede acceder al resto
                                 .anyRequest().authenticated()
                 )
