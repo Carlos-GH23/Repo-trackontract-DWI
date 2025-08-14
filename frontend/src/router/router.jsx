@@ -22,6 +22,7 @@ import EditarCliente from "../modules/admin/components/editar_cliente"
 import EditarContrato from "../modules/admin/components/editar_contrato"
 import ProfileAdmin from "../modules/admin/views/Perfil"
 import PrivateRoute from "./PrivateRoute"
+import Bitacora from "../modules/admin/views/Bitacora"
 
 
 const AppRouter = () => {
@@ -47,6 +48,7 @@ const AppRouter = () => {
           <Route path="abogados" element={<Usuarios />} />
           <Route path="abogados/add" element={<RegistroUsuario />} />
           <Route path="abogados/edit/:id" element={<EditarUsuario />} />
+          <Route path="bitacora" element={<Bitacora />} />
           <Route path="perfil" element={<ProfileAdmin />} />
             </Route>
           </Route>

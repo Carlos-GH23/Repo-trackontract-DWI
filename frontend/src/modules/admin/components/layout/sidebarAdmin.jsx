@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { FaUsers, FaFileContract, FaTags, FaChevronLeft, FaChevronRight, FaUserCircle, FaHistory, FaUserTie, FaAddressBook, FaSignOutAlt } from "react-icons/fa";
+import { FaUsers, FaFileContract, FaTags, FaChevronLeft, FaChevronRight, FaUserCircle, FaHistory, FaUserTie, FaAddressBook, FaSignOutAlt, FaClipboardList } from "react-icons/fa";
 
 const sidebarAdmin = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
@@ -9,7 +9,9 @@ const sidebarAdmin = ({ isCollapsed, setIsCollapsed }) => {
         { to: "/admin/clientes", label: "Gestión de Clientes", icon: <FaAddressBook /> },
         { to: "/admin/contratos", label: "Gestión de Contratos", icon: <FaFileContract /> },
         { to: "/admin/categorias", label: "Gestión de Categorias", icon: <FaTags /> },
+        { to: "/admin/bitacora", label: "Bitácora", icon: <FaClipboardList /> },
         { to: "/admin/perfil", label: "Perfil", icon: <FaUserCircle /> },
+        
 
     ];
 

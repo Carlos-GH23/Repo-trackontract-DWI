@@ -66,6 +66,10 @@ const Navbar = () => {
             title: 'Categorias',
             subtitle: 'Gestión de Categorias',
         },
+        '/admin/bitacora': {
+            title: 'Bitácora',
+            subtitle: 'Aquí podrás visualizar tú bitácora',
+        },
         '/admin/perfil': {
             title: 'Perfil',
             subtitle: 'Aquí podrás cambiar tu información personal y contraseña',
