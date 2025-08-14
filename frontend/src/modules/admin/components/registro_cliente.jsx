@@ -101,7 +101,20 @@ export default function RegistroCliente() {
                 }
             }
 
-            Swal.fire("¡Creado!", "El cliente fue creado exitosamente.", "success");
+            Swal.fire({
+                title: "¡Cliente Creado!",
+                html: `
+                    <p>El cliente fue creado exitosamente.</p>
+                    <p class="mt-2 text-sm text-gray-600">
+                        <strong>Usuario automático creado:</strong><br/>
+                        <strong>Email:</strong> ${email}<br/>
+                        <strong>Contraseña:</strong> ${representativeName}123
+                    </p>
+                `,
+                icon: "success",
+                confirmButtonText: "Entendido",
+                confirmButtonColor: "#3B82F6"
+            });
             volverAClientes();
         } catch (error) {
             console.error(error);

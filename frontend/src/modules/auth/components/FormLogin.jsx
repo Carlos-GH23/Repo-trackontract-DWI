@@ -39,6 +39,7 @@ const FormLogin = () => {
       localStorage.setItem("accessToken", token);
       
       // Guarda información del usuario
+      localStorage.setItem("userId", user.id);
       localStorage.setItem("user", user.name);
       localStorage.setItem("email", user.email);
       localStorage.setItem("role", user.role);

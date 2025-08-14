@@ -26,9 +26,14 @@ public class AppConfig {
         return username -> {
             final User user = repository.findByEmail(username)
                     .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+            
+            // Construir UserDetails con roles correctos
+            // Spring Security automáticamente agrega el prefijo "ROLE_" a los roles
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getEmail())
                     .password(user.getPassword())
+                    .authorities("ROLE_" + user.getRol_id().getName()) // Usar authorities en lugar de roles
+                    .disabled(!user.isStatus()) // Deshabilitar si el usuario no está activo
                     .build();
         };
     }

@@ -10,12 +10,14 @@ export default function EditarContrato() {
     name: "",
     client_id: "",
     category_id: "",
+    abogado_id: "", // Agregar campo para abogado
     due_date: "",
     description: "",
     status: true
   })
   const [clientes, setClientes] = useState([])
   const [categorias, setCategorias] = useState([])
+  const [abogados, setAbogados] = useState([]) // Agregar estado para abogados
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [contrato, setContrato] = useState(null)
@@ -25,6 +27,7 @@ export default function EditarContrato() {
     fetchContrato()
     fetchClientes()
     fetchCategorias()
+    fetchAbogados() // Agregar llamada para obtener abogados
   }, [id])
 
   // Función para obtener el contrato a editar
@@ -56,6 +59,7 @@ export default function EditarContrato() {
           name: contratoData.name || "",
           client_id: contratoData.client_id?.id || "",
           category_id: contratoData.category_id?.id || "",
+          abogado_id: contratoData.abogado_id?.id || "", // Inicializar abogado_id
           due_date: contratoData.due_date ? contratoData.due_date.split('T')[0] : "",
           description: contratoData.description || "",
           status: contratoData.status || true
@@ -133,6 +137,39 @@ export default function EditarContrato() {
     }
   }
 
+  // Función para obtener abogados
+  const fetchAbogados = async () => {
+    try {
+      const token = localStorage.getItem("accessToken")
+      
+      if (!token) {
+        throw new Error("No hay token de autenticación")
+      }
+
+      const response = await fetch("http://localhost:8080/users/by-role/ABOGADO", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al obtener abogados")
+      }
+
+      const data = await response.json()
+      if (data.result) {
+        setAbogados(data.result)
+      } else {
+        setAbogados([])
+      }
+    } catch (err) {
+      console.error("Error al obtener abogados:", err)
+      setError("Error al cargar abogados: " + err.message)
+    }
+  }
+
   // Función para manejar cambios en el formulario
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -185,6 +222,9 @@ export default function EditarContrato() {
         },
         categoriesDTO: {
           id: parseInt(formData.category_id)
+        },
+        abogadoDTO: { // Incluir abogado_id
+          id: parseInt(formData.abogado_id)
         }
       }
 
@@ -250,6 +290,7 @@ export default function EditarContrato() {
               fetchContrato()
               fetchClientes()
               fetchCategorias()
+              fetchAbogados() // Reintentar llamada para abogados
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
           >
@@ -377,6 +418,24 @@ export default function EditarContrato() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Abogado Asignado *</label>
+                <select
+                  name="abogado_id"
+                  value={formData.abogado_id}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                  required
+                >
+                  <option value="">Seleccione un abogado</option>
+                  {abogados.map(abogado => (
+                    <option key={abogado.id} value={abogado.id}>
+                      {abogado.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Vencimiento *</label>
                 <input
                   type="date"
@@ -387,7 +446,9 @@ export default function EditarContrato() {
                   required
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
                 <textarea
