@@ -21,11 +21,13 @@ import EditarCliente from "../modules/admin/components/editar_cliente"
 import EditarContrato from "../modules/admin/components/editar_contrato"
 import ProfileAdmin from "../modules/admin/views/Perfil"
 import PrivateRoute from "./PrivateRoute"
+import Bitacora from "../modules/admin/views/Bitacora"
 import LayoutCompa from "../modules/companies/components/layout/LayoutCompa"
 import ProfileCompa from "../modules/companies/views/Profile"
 import Contrats from "../modules/companies/views/Contrats"
 import CategoriasInactivas from "../modules/admin/views/CategoriasInactivas";
 import CategoriasActivas from "../modules/admin/views/CategoriasActivas";
+
 
 const AppRouter = () => {
   return (
@@ -34,7 +36,6 @@ const AppRouter = () => {
         {/* Rutas públicas */}
         <Route path="/" element={<Login />} />
         <Route path="/forgot-password" element={<PasswordRecoveryForm />} />
-
         {/* Rutas protegidas para ADMIN */}
         <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
           <Route path="/admin" element={<LayoutAdmin />}>
@@ -52,7 +53,9 @@ const AppRouter = () => {
             <Route path="abogados" element={<Usuarios />} />
             <Route path="abogados/add" element={<RegistroUsuario />} />
             <Route path="abogados/edit/:id" element={<EditarUsuario />} />
+            <Route path="bitacora" element={<Bitacora />} />
             <Route path="perfil" element={<ProfileAdmin />} />
+
           </Route>
         </Route>
 

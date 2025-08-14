@@ -72,6 +72,10 @@ const Navbar = () => {
             title: 'Categorías Inactivas',
             subtitle: 'Gestión de Categorías Inactivas',
         },
+        '/admin/bitacora': {
+            title: 'Bitácora',
+            subtitle: 'Aquí podrás visualizar tú bitácora',
+        },
         '/admin/perfil': {
             title: 'Perfil',
             subtitle: 'Aquí podrás cambiar tu información personal y contraseña',
