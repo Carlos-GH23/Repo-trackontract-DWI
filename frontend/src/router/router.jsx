@@ -15,7 +15,6 @@ import EditarCategoria from "../modules/admin/components/editar_categoria"
 import ProfileAbo from "../modules/abogado/views/Profile";
 import Contract from "../modules/abogado/views/Contract";
 import Empresas from "../modules/abogado/views/Empresas";
-import ContratoAcep from "../modules/abogado/components/contratoAcep";
 import Clientes from "../modules/admin/views/Clientes"
 import RegistroCliente from "../modules/admin/components/registro_cliente"
 import EditarCliente from "../modules/admin/components/editar_cliente"
@@ -23,35 +22,42 @@ import EditarContrato from "../modules/admin/components/editar_contrato"
 import ProfileAdmin from "../modules/admin/views/Perfil"
 import PrivateRoute from "./PrivateRoute"
 import Bitacora from "../modules/admin/views/Bitacora"
+import LayoutCompa from "../modules/companies/components/layout/LayoutCompa"
+import ProfileCompa from "../modules/companies/views/Profile"
+import Contrats from "../modules/companies/views/Contrats"
+import CategoriasInactivas from "../modules/admin/views/CategoriasInactivas";
+import CategoriasActivas from "../modules/admin/views/CategoriasActivas";
 
 
 const AppRouter = () => {
   return (
-      <BrowserRouter>
-        <Routes>
-          {/* Rutas públicas */}
-          <Route path="/" element={<Login />} />
-          <Route path="/forgot-password" element={<PasswordRecoveryForm />} />
+    <BrowserRouter>
+      <Routes>
+        {/* Rutas públicas */}
+        <Route path="/" element={<Login />} />
+        <Route path="/forgot-password" element={<PasswordRecoveryForm />} />
+        {/* Rutas protegidas para ADMIN */}
+        <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin" element={<LayoutAdmin />}>
+            <Route path="contratos" element={<Contratos />} />
+            <Route path="contratos/add" element={<RegistroContrato />} />
+            <Route path="contratos/edit/:id" element={<EditarContrato />} />
+            <Route path="categorias" element={<Categorias />} />
+            <Route path="categorias/add" element={<RegistroCategoria />} />
+            <Route path="categorias/edit/:id" element={<EditarCategoria />} />
+            <Route path="categorias/inactivas" element={<CategoriasInactivas />} />
+            <Route path="categorias/activas" element={<CategoriasActivas />} />
+            <Route path="clientes" element={<Clientes />} />
+            <Route path="clientes/add" element={<RegistroCliente />} />
+            <Route path="clientes/edit/:id" element={<EditarCliente />} />
+            <Route path="abogados" element={<Usuarios />} />
+            <Route path="abogados/add" element={<RegistroUsuario />} />
+            <Route path="abogados/edit/:id" element={<EditarUsuario />} />
+            <Route path="bitacora" element={<Bitacora />} />
+            <Route path="perfil" element={<ProfileAdmin />} />
 
-          {/* Rutas protegidas para ADMIN */}
-          <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
-            <Route path="/admin" element={<LayoutAdmin />}>
-              <Route path="contratos" element={<Contratos />} />
-          <Route path="contratos/add" element={<RegistroContrato />} />
-          <Route path="contratos/edit/:id" element={<EditarContrato />} />
-          <Route path="categorias" element={<Categorias />} />
-          <Route path="categorias/add" element={<RegistroCategoria />} />
-          <Route path="categorias/edit/:id" element={<EditarCategoria />} />
-          <Route path="clientes" element={<Clientes />} />
-          <Route path="clientes/add" element={<RegistroCliente />} />
-          <Route path="clientes/edit/:id" element={<EditarCliente />} />
-          <Route path="abogados" element={<Usuarios />} />
-          <Route path="abogados/add" element={<RegistroUsuario />} />
-          <Route path="abogados/edit/:id" element={<EditarUsuario />} />
-          <Route path="bitacora" element={<Bitacora />} />
-          <Route path="perfil" element={<ProfileAdmin />} />
-            </Route>
           </Route>
+        </Route>
 
           {/* Rutas protegidas para ABOGADO */}
           <Route element={<PrivateRoute allowedRoles={["ABOGADO"]} />}>
@@ -61,10 +67,17 @@ const AppRouter = () => {
               <Route path="empresas" element={<Empresas />} />
             </Route>
           </Route>
+
+          {/* Rutas protegisdas para las Empresas */}
+          <Route element={<PrivateRoute allowedRoles={["CLIENT"]} />}>
+            <Route path="/empresa" element={<LayoutCompa />}>
+              <Route path="profile" element={< ProfileCompa/>} />
+              <Route path="contract" element={<Contrats />} />
+            </Route>
+          </Route>
         </Routes>
       </BrowserRouter>
   )
 }
-
 
 export default AppRouter;

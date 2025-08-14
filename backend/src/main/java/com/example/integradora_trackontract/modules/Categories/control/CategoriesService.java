@@ -31,10 +31,11 @@ public class CategoriesService {
 
     //Busqueda de categorias inactivas
     @Transactional(readOnly = true)
-    public List<Categories> findAllByStatusIsFalse(Boolean status) {
+    public List<Categories> findAllByStatusIsFalse() {
         logger.info("Buscando categorias con estado inactivo");
         return categoriesRepository.findAllByStatusIsFalse();
     }
+
 
     //Busqueda de categorias
     @Transactional(readOnly = true)
@@ -58,6 +59,12 @@ public class CategoriesService {
         }
         if(dto.getName().length() >= 100) {
             return new ResponseEntity<>(new Message("El nombre de la categoria excede los 100 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if(dto.getName() == null || dto.getName().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre de la categoria no puede ser nulo o vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if(dto.getDescription() == null || dto.getDescription().isEmpty()) {
+            return new ResponseEntity<>(new Message("La descripción de la categoria no puede ser nula o vacía", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
         if(dto.getDescription().length() >= 255) {
             return new ResponseEntity<>(new Message("La descripción de la categoria excede los 255 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
@@ -166,7 +173,7 @@ public class CategoriesService {
     public ResponseEntity<Message> findAllByStatusIsTrue() {
         List<Categories> categories = categoriesRepository.findAllByStatusIsTrue();
         if (categories.isEmpty()) {
-            return new ResponseEntity<>(new Message("No hay categorias activas", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new Message(categories, "No hay categorias activas", TypesResponse.WARNING), HttpStatus.OK);
         }
         logger.info("Busqueda de categorias activas realizada correctamente");
         return new ResponseEntity<>(new Message(categories, "Categorias activas encontradas", TypesResponse.SUCCESS), HttpStatus.OK);

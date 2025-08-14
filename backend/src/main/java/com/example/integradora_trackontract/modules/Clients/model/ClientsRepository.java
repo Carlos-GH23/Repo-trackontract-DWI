@@ -11,13 +11,10 @@ public interface ClientsRepository extends JpaRepository<Clients, Long> {
     List<Clients> findAllByStatusIsTrue();
 
     Optional<Clients> findByName(String name);
+    
+    Optional<Clients> findByEmail(String email);
 
     int countByStatusIsTrue();
 
     int countByStatusIsFalse();
-
-
-
-
-
 }

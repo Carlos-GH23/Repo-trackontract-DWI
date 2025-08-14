@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
 import styles from "../styles/form-login.module.css";
-
+import { showErrorToast } from "../../../kernel/alerts";
 
 const FormLogin = () => {
   const [email, setEmail] = useState("");
@@ -23,40 +23,50 @@ const FormLogin = () => {
       if (!response.ok) throw new Error("Error al iniciar sesión");
 
       const data = await response.json();
+      
+      // El backend devuelve { token, user }
+      const { token, user } = data;
+      
+      if (!token || typeof token !== 'string') {
+        throw new Error("Token no encontrado o inválido en la respuesta del servidor");
+      }
 
-      // Guarda tokens
-      localStorage.setItem("accessToken", data.access_token);
-      localStorage.setItem("refreshToken", data.refresh_token);
+      if (!user || typeof user !== 'object') {
+        throw new Error("Información de usuario no encontrada en la respuesta del servidor");
+      }
 
-      // Decodifica token
-      const decoded = jwtDecode(data.access_token);
-      const role = decoded?.roles?.[0] || decoded?.role;
-      console.log("Rol detectado:", role);
+      // Guarda token
+      localStorage.setItem("accessToken", token);
+      
+      // Guarda información del usuario
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("user", user.name);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("role", user.role);
 
-      // Guarda rol para PrivateRoute
-      localStorage.setItem("role", role);
+      // Decodifica token para verificar
+      const decoded = jwtDecode(token);
 
       // Redirecciona según rol
-      if (role === "ADMIN") {
+      if (user.role === "ADMIN") {
         navigate("/admin/contratos");
-      } else if (role === "ABOGADO") {
+      } else if (user.role === "ABOGADO") {
         navigate("/abogado/profile");
+      } else if (user.role === "CLIENT") {
+        navigate("/empresa/profile");
       } else {
-        alert("Rol no reconocido");
+        alert("Rol no reconocido: " + user.role);
       }
     } catch (err) {
-      console.error(err);
-      alert("Credenciales incorrectas o cuenta bloqueada");
+      showErrorToast({
+        title: "Error",
+        text: err.message || "Credenciales incorrectas o cuenta bloqueada",
+        timer: 4000
+      });
     }
   };
 
-
-
-
-
-
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
-
 
   return (
     <div className={styles.container}>
@@ -64,17 +74,7 @@ const FormLogin = () => {
         <div className={styles.logoContainer}>
           <div className={styles.logoWrapper}>
             <div className={styles.shield}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg"width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -87,6 +87,7 @@ const FormLogin = () => {
                 <path d="M8 21h8" />
                 <path d="M12 17v4" />
                 <path d="M4 15s2-1 4-1 4 1 4 1-2 1-4 1-4-1-4-1Z" />
+                
                 <path d="M16 15s2-1 4-1 4 1 4 1-2 1-4 1-4-1-4-1Z" />
               </svg>
             </div>

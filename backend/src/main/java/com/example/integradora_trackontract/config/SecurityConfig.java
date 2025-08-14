@@ -29,9 +29,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
+                    corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:5173"));
+                    corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
+                    corsConfiguration.setAllowCredentials(true);
+                    return corsConfiguration;
+                }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req.requestMatchers("/auth/**").permitAll()
+
+                                // Permitir que usuarios autenticados accedan a su propio perfil y funcionalidades básicas
+                                .requestMatchers("/users/me", "/users/me/**")
+                                .authenticated()
+
+                                // Permitir que usuarios autenticados actualicen su propio perfil
+                                .requestMatchers("/users/update")
+                                .authenticated()
+
+                                // Solo ADMIN puede acceder a gestión de usuarios
+                                .requestMatchers("/users/**")
+                                .hasRole("ADMIN")
 
                                 // Solo ADMIN y ABOGADO pueden acceder a gestión de clientes
                                 .requestMatchers("/clients/**")
@@ -40,6 +60,29 @@ public class SecurityConfig {
                                 // Solo ADMIN puede acceder a cualquier ruta /admin/**
                                 .requestMatchers("/admin/**")
                                 .hasRole("ADMIN")
+
+                                // Permitir que los clientes accedan a sus propios contratos (ANTES de la regla general)
+                                .requestMatchers("/contracts/by-client/**")
+                                .hasRole("CLIENT")
+
+                                // Permitir que los clientes accedan a sus contratos por email
+                                .requestMatchers("/contracts/by-user-email")
+                                .hasRole("CLIENT")
+
+                                // Permitir que los clientes descarguen PDFs de sus contratos
+                                .requestMatchers("/contracts/*/pdf")
+                                .hasRole("CLIENT")
+
+                                // Solo ADMIN y ABOGADO pueden acceder a gestión de contratos (DESPUÉS de la específica)
+                                .requestMatchers("/contracts/**")
+                                .hasAnyRole("ADMIN", "ABOGADO")
+
+                                // Solo ADMIN puede acceder a gestión de categorías
+                                .requestMatchers("/categories/**")
+                                .hasRole("ADMIN")
+
+                                // Solo ADMIN puede acceder a Audit_Logs
+                                .requestMatchers("/audit-logs/**").hasRole("ADMIN")
 
                                 // Cualquiera autenticado puede acceder al resto
                                 .anyRequest().authenticated()

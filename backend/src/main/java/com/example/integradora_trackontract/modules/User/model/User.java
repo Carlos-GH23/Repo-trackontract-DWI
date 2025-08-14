@@ -17,8 +17,6 @@ import java.util.List;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -54,7 +52,163 @@ public class User {
     @Column(name = "login_attempts", columnDefinition = "INT DEFAULT 0")
     private int login_attempts;
 
+    public User() {
+    }
 
+    public User(Long id, String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
+        this.id = id;
+        this.name = name;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.password = password;
+        this.status = status;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+        this.login_attempts = login_attempts;
+        this.tokens = tokens;
+        this.audit_logs = audit_logs;
+        this.password_resets = password_resets;
+        this.user_contracts = user_contracts;
+        this.rol_id = rol_id;
+    }
+
+    public User(String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
+        this.name = name;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.password = password;
+        this.status = status;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+        this.login_attempts = login_attempts;
+        this.tokens = tokens;
+        this.audit_logs = audit_logs;
+        this.password_resets = password_resets;
+        this.user_contracts = user_contracts;
+        this.rol_id = rol_id;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getUpdated_at() {
+        return updated_at;
+    }
+
+    public void setUpdated_at(LocalDateTime updated_at) {
+        this.updated_at = updated_at;
+    }
+
+    public int getLogin_attempts() {
+        return login_attempts;
+    }
+
+    public void setLogin_attempts(int login_attempts) {
+        this.login_attempts = login_attempts;
+    }
+
+    public List<Token> getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(List<Token> tokens) {
+        this.tokens = tokens;
+    }
+
+    public List<Audit_Logs> getAudit_logs() {
+        return audit_logs;
+    }
+
+    public void setAudit_logs(List<Audit_Logs> audit_logs) {
+        this.audit_logs = audit_logs;
+    }
+
+    public List<Password_Resets> getPassword_resets() {
+        return password_resets;
+    }
+
+    public void setPassword_resets(List<Password_Resets> password_resets) {
+        this.password_resets = password_resets;
+    }
+
+    public List<User_Contracts> getUser_contracts() {
+        return user_contracts;
+    }
+
+    public void setUser_contracts(List<User_Contracts> user_contracts) {
+        this.user_contracts = user_contracts;
+    }
+
+    public Roles getRol_id() {
+        return rol_id;
+    }
+
+    public void setRol_id(Roles rol_id) {
+        this.rol_id = rol_id;
+    }
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Token> tokens;

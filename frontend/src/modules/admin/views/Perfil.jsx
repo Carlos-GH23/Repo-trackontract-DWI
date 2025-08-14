@@ -1,65 +1,202 @@
-import "../../../styles/navbarbo.styles.css"
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import "../../../styles/perfil.styles.css";
 
 const ProfileAdmin = () => {
-  return (
-    <>
-      <div className="datos">
-        <h2 className="titulo">Datos del Admin</h2>
+  const [profile, setProfile] = useState({
+    id: null,
+    name: "",
+    lastName: "",
+    email: "",
+    phoneNumber: ""
+  });
 
-        <div className="contenido">
+  const [emailOriginal, setEmailOriginal] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    fetch("http://localhost:8080/users/me", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+        .then(res => {
+          if (!res.ok) throw new Error("Error al obtener perfil");
+          return res.json();
+        })
+        .then(data => {
+          setProfile({
+            id: data.id,
+            name: data.name,
+            lastName: data.lastName,
+            email: data.email,
+            phoneNumber: data.phoneNumber
+          });
+          setEmailOriginal(data.email); // Guardamos el email original para comparar luego
+        })
+        .catch(err => {
+          console.error(err);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo cargar el perfil, inicia sesión nuevamente.",
+            confirmButtonText: "Aceptar"
+          }).then(() => {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            window.location.href = "/";
+          });
+        })
+        .finally(() => setLoading(false));
+  }, []);
+
+  const handleChange = (e) => {
+    setProfile({ ...profile, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setMessage(null);
+
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      Swal.fire({
+        icon: "error",
+        title: "No autorizado",
+        text: "Por favor inicia sesión.",
+        confirmButtonText: "Aceptar"
+      }).then(() => {
+        window.location.href = "/";
+      });
+      return;
+    }
+
+    fetch("http://localhost:8080/users/me", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        id: profile.id,
+        name: profile.name,
+        last_name: profile.lastName,
+        email: profile.email,
+        phoneNumber: profile.phoneNumber
+      })
+    })
+        .then(async (res) => {
+          const body = await res.json();
+
+          if (res.status === 401 || res.status === 403) {
+            Swal.fire({
+              icon: "warning",
+              title: "Sesión expirada",
+              text: "Tu sesión ha expirado o tus datos han cambiado. Vuelve a iniciar sesión.",
+              confirmButtonText: "Aceptar"
+            }).then(() => {
+              localStorage.removeItem("accessToken");
+              localStorage.removeItem("refreshToken");
+              window.location.href = "/";
+            });
+            return;
+          }
+
+          if (res.ok) {
+            if (profile.email !== emailOriginal) {
+              Swal.fire({
+                icon: "success",
+                title: "Perfil actualizado",
+                text: "Has cambiado tu correo, por seguridad debes iniciar sesión nuevamente.",
+                confirmButtonText: "Aceptar"
+              }).then(() => {
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                window.location.href = "/";
+              });
+            } else {
+              Swal.fire({
+                icon: "success",
+                title: "Perfil actualizado",
+                text: "Cambios guardados correctamente.",
+                confirmButtonText: "Aceptar"
+              });
+              setEmailOriginal(profile.email); // Actualizamos el email original
+            }
+          } else {
+            setMessage(body.text || "Error al actualizar perfil");
+          }
+        })
+        .catch(() => setMessage("Error de conexión"));
+  };
+
+  if (loading) return <p>Cargando...</p>;
+
+  return (
+      <div className="datos">
+        <h2 className="titulo">Editar Perfil</h2>
+
+        {message && <p className="mensaje">{message}</p>}
+
+        <form onSubmit={handleSubmit} className="contenido">
           <div className="info">
             <div className="campo">
               <label htmlFor="name">Nombre(s):</label>
-              <input type="text" id="name" name="name" placeholder="Carlos Galan Hernandez" />
+              <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={profile.name}
+                  onChange={handleChange}
+              />
+            </div>
+            <div className="campo">
+              <label htmlFor="lastName">Apellido(s):</label>
+              <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={profile.lastName}
+                  onChange={handleChange}
+              />
             </div>
             <div className="campo">
               <label htmlFor="email">Correo Electrónico:</label>
-              <input type="email" id="email" name="email" placeholder="admin@utez.edu.mx" />
+              <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={profile.email}
+                  onChange={handleChange}
+              />
             </div>
           </div>
 
           <div className="info1">
             <div className="campo">
-              <label htmlFor="telefono">Teléfono:</label>
-              <input type="tel" id="telefono" name="telefono" placeholder="7771234567" />
+              <label htmlFor="phoneNumber">Teléfono:</label>
+              <input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={profile.phoneNumber}
+                  onChange={handleChange}
+              />
             </div>
-            <div className="campo">
-              <label htmlFor="cedula">Cédula Profesional:</label>
-              <input type="text" id="cedula" name="cedula" placeholder="12345678" />
-            </div>
           </div>
-        </div>
-        <div className="boton-container">
-          <button className="btn">Actualizar</button>
-        </div>
+
+          <div className="boton-container">
+            <button type="submit" className="btn">
+              Guardar cambios
+            </button>
+          </div>
+        </form>
       </div>
-      <div className="datos">
-        <h2 className="titulo">Cambio de contraseña</h2>
-
-        <div className="fila-contrasenas">
-          <div className="campo">
-            <label htmlFor="password">Contraseña:</label>
-            <input type="password" id="password" name="password" placeholder="********" />
-          </div>
-
-          <div className="campo">
-            <label htmlFor="password1">Contraseña actual:</label>
-            <input type="password" id="password1" name="password1" placeholder="********" />
-          </div>
-
-          <div className="campo">
-            <label htmlFor="password2">Contraseña nueva:</label>
-            <input type="password" id="password2" name="password2" placeholder="Ingresa tu nueva contraseña" />
-          </div>
-        </div>
-
-        <div className="boton-container1">
-          <button className="btn">Guardar Contraseña</button>
-        </div>
-      </div>
-
-    </>
   );
-}
+};
 
 export default ProfileAdmin;

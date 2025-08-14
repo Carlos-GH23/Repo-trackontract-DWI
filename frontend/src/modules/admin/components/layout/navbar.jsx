@@ -2,7 +2,7 @@ import "../../../../styles/navbarbo.styles.css"
 import { FaUserShield } from "react-icons/fa"
 import { useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-
+import { useNavigate } from "react-router-dom"
 
 const Navbar = () => {
     const location = useLocation()
@@ -12,20 +12,23 @@ const Navbar = () => {
 
     const navigate = useNavigate();
     const handleLogout = async () => {
-        const token = localStorage.getItem("accessToken");
+        const accessToken = localStorage.getItem("access_token");
 
-        if (token) {
-            try {
-                await fetch("http://localhost:8080/auth/logout", {
-                    method: "POST",
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-            } catch (error) {
-                console.error("Error al invalidar el token:", error);
-            }
+        try {
+            await fetch("http://localhost:8080/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            });
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
         }
 
-        localStorage.clear();
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("role");
+
         navigate("/");
     };
 
@@ -57,14 +60,17 @@ const Navbar = () => {
             title: 'Clientes',
             subtitle: 'Gestión de Clientes',
         },
-
         '/admin/contratos': {
             title: 'Contratos',
             subtitle: 'Gestión de contratos',
         },
         '/admin/categorias': {
-            title: 'Categorias',
-            subtitle: 'Gestión de Categorias',
+            title: 'Categorías',
+            subtitle: 'Gestión de Categorías',
+        },
+        '/admin/categorias/inactivas': {
+            title: 'Categorías Inactivas',
+            subtitle: 'Gestión de Categorías Inactivas',
         },
         '/admin/bitacora': {
             title: 'Bitácora',
@@ -74,8 +80,8 @@ const Navbar = () => {
             title: 'Perfil',
             subtitle: 'Aquí podrás cambiar tu información personal y contraseña',
         },
+    };
 
-    }
 
     const currentRoute = routeInfo[location.pathname] || {
         title: 'Bienvenido Admin',
@@ -83,26 +89,15 @@ const Navbar = () => {
     }
 
 
-
     return (
         <header className={`navbarbo transition-transform duration-300 ${hideNavbar ? "-translate-y-full" : "translate-y-0"}`}>
             <h2 className="icoNo">
                 <FaUserShield size={50} className="mr-4 text-2xl" />
-
                 <div className="nom">
                     <h1 className="h1">{currentRoute.title}</h1>
                     <p>{currentRoute.subtitle}</p>
                 </div>
             </h2>
-            <div className="flex items-center gap-4">
-                <span className="text-sm text-[var(--color-gris-texto)]">Rol del Usuario</span>
-
-                <button
-                onClick={handleLogout}
-                    className="px-3 py-2 rounded-md bg-[var(--color-marron)] text-white font-medium hover:bg-[var(--color-cafe)] transition ">
-                    Cerrar sesión
-                </button>
-            </div>
 
         </header>
     )
@@ -110,5 +105,4 @@ const Navbar = () => {
 
 
 
-
-export default Navbar;
+export default Navbar

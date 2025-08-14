@@ -19,17 +19,19 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody final LoginRequest request) {
-        final TokenResponse token = service.login(request);
-        return ResponseEntity.ok(token);
+    public ResponseEntity<LoginResponse> login(@RequestBody final LoginRequest request) {
+        final LoginResponse response = service.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) final String authHeader) {
+        service.logout(authHeader);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh")
     public TokenResponse refreshToken(@RequestHeader(HttpHeaders.AUTHORIZATION) final String authHeader) {
         return service.refreshToken(authHeader);
     }
-
-
-
-
 }
