@@ -53,6 +53,10 @@ public class SecurityConfig {
                                 .requestMatchers("/users/**")
                                 .hasRole("ADMIN")
 
+                                // Permitir que los clientes accedan a su propio perfil (ANTES de la regla general)
+                                .requestMatchers("/clients/me", "/clients/me/**")
+                                .hasRole("CLIENT")
+
                                 // Solo ADMIN y ABOGADO pueden acceder a gestión de clientes
                                 .requestMatchers("/clients/**")
                                 .hasAnyRole("ADMIN", "ABOGADO")

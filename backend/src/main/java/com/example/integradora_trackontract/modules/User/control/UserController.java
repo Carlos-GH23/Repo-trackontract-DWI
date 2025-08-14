@@ -97,6 +97,16 @@ public class UserController {
         return userService.changeMyPassword(ud.getUsername(), body);
     }
 
+    // Actualizar contraseña sin verificar la actual
+    @PutMapping("/me/password/update")
+    public ResponseEntity<Message> updatePasswordWithoutCurrent(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails ud,
+            @RequestBody java.util.Map<String, String> body) {
+        String newPassword = body.get("newPassword");
+        String confirmPassword = body.get("confirmPassword");
+        return userService.updatePasswordWithoutCurrent(ud.getUsername(), newPassword, confirmPassword);
+    }
+
     @PutMapping("/me")
     public ResponseEntity<Message> updateMyProfile(
             @AuthenticationPrincipal UserDetails userDetails,

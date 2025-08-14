@@ -31,6 +31,9 @@ public class ContractsDTO {
     private String approvedAt;
 
     private String rejectionReason;
+    
+    // Nuevo campo para el estado del contrato
+    private String contractStatus;
 
     @NotNull(groups = {Register.class, Modify.class}, message = "El cliente no puede ser nulo")
     private ClientsDTO clientsDTO;
@@ -151,6 +154,14 @@ public class ContractsDTO {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+    
+    public String getContractStatus() {
+        return contractStatus;
+    }
+
+    public void setContractStatus(String contractStatus) {
+        this.contractStatus = contractStatus;
     }
 
     public interface Register {}

@@ -286,4 +286,95 @@ public class ClientsService {
         logger.info("Clientes activos: {}, Clientes inactivos: {}", activeCount, inactiveCount);
     }
 
+    // Obtener perfil del cliente por email
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> getProfileByEmail(String email) {
+        Optional<Clients> clientOptional = clientsRepository.findByEmail(email);
+        if (!clientOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Cliente no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+        
+        Clients client = clientOptional.get();
+        logger.info("Perfil del cliente obtenido correctamente para email: {}", email);
+        return new ResponseEntity<>(new Message(client, "Perfil del cliente obtenido", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
+    // Actualizar perfil del cliente
+    @Transactional(rollbackFor = {SQLException.class})
+    public ResponseEntity<Message> updateProfile(String email, ClientsDTO dto) {
+        Optional<Clients> clientOptional = clientsRepository.findByEmail(email);
+        if (!clientOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Cliente no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+
+        Clients client = clientOptional.get();
+
+        // Validaciones básicas
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getBusiness_name() == null || dto.getBusiness_name().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre del negocio no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getRepresentative_name() == null || dto.getRepresentative_name().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre del representante no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getRepresentative_surnames() == null || dto.getRepresentative_surnames().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("Los apellidos del representante no pueden ser vacíos", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getPhone() == null || dto.getPhone().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El teléfono no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+
+        // Actualizar campos
+        client.setName(dto.getName());
+        client.setBusiness_name(dto.getBusiness_name());
+        client.setRepresentative_name(dto.getRepresentative_name());
+        client.setRepresentative_surnames(dto.getRepresentative_surnames());
+        client.setPhone(dto.getPhone());
+        client.setUpdated_at(LocalDateTime.now());
+
+        client = clientsRepository.saveAndFlush(client);
+        if (client == null) {
+            return new ResponseEntity<>(new Message("El perfil no se pudo actualizar", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
+        }
+
+        logger.info("Perfil del cliente actualizado correctamente");
+        return new ResponseEntity<>(new Message(client, "Perfil actualizado correctamente", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
+    // Actualizar contraseña del cliente
+    @Transactional(rollbackFor = {SQLException.class})
+    public ResponseEntity<Message> updatePassword(String email, String newPassword, String confirmPassword) {
+        // Primero buscar el cliente por email
+        Optional<Clients> clientOptional = clientsRepository.findByEmail(email);
+        if (!clientOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Cliente no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+
+        // Luego buscar el usuario asociado al cliente
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (!userOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Usuario no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+
+        User user = userOptional.get();
+
+        // Validaciones básicas
+        if (!newPassword.equals(confirmPassword)) {
+            return new ResponseEntity<>(new Message("La confirmación no coincide", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (newPassword.length() < 8) {
+            return new ResponseEntity<>(new Message("La nueva contraseña debe tener al menos 8 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+
+        // Actualizar contraseña
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdated_at(LocalDateTime.now());
+        userRepository.saveAndFlush(user);
+
+        logger.info("Contraseña del cliente actualizada correctamente");
+        return new ResponseEntity<>(new Message("Contraseña actualizada exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
 }

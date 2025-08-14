@@ -19,6 +19,7 @@ import java.util.List;
 @Table(name = "contracts")
 public class Contracts {
     
+    // Estado anterior - mantener para compatibilidad
     public enum ApprovalStatus {
         PENDIENTE,
         ACEPTADO,
@@ -44,6 +45,11 @@ public class Contracts {
     @Enumerated(EnumType.STRING)
     @Column(name = "approval_status", columnDefinition = "VARCHAR(20) DEFAULT 'PENDIENTE'")
     private ApprovalStatus approvalStatus;
+    
+    // Nuevo sistema de estados
+    @Enumerated(EnumType.STRING)
+    @Column(name = "contract_status", columnDefinition = "VARCHAR(50) DEFAULT 'DRAFT'")
+    private ContractStatus contractStatus;
 
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
@@ -64,6 +70,11 @@ public class Contracts {
 
     @OneToMany(mappedBy = "contract_id", cascade = CascadeType.ALL)
     private List<User_Contracts> user_contracts;
+    
+    // Historial de cambios de estado
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ContractStatusHistory> statusHistory;
 
     @ManyToOne
     @JsonIgnore
@@ -95,6 +106,7 @@ public class Contracts {
         this.description = description;
         this.due_date = due_date;
         this.status = status;
+        this.contractStatus = ContractStatus.DRAFT; // Estado inicial
         this.created_at = LocalDateTime.now();
         this.updated_at = LocalDateTime.now();
         this.category_id = categories;
@@ -219,5 +231,21 @@ public class Contracts {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+    
+    public ContractStatus getContractStatus() {
+        return contractStatus;
+    }
+
+    public void setContractStatus(ContractStatus contractStatus) {
+        this.contractStatus = contractStatus;
+    }
+    
+    public List<ContractStatusHistory> getStatusHistory() {
+        return statusHistory;
+    }
+
+    public void setStatusHistory(List<ContractStatusHistory> statusHistory) {
+        this.statusHistory = statusHistory;
     }
 }

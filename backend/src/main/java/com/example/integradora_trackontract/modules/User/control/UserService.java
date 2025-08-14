@@ -237,7 +237,7 @@ public class UserService {
     // Buscar usuarios por rol específico (ej: ABOGADO)
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findAllByRole(String roleName) {
-        List<User> users = userRepository.findAllByRoleNameAndStatusActive(roleName);
+        List<User> users = userRepository.findAllByRoleName(roleName);
         logger.info("Buscando usuarios con rol: {}", roleName);
         if (users.isEmpty()) {
             return new ResponseEntity<>(new Message(users, "No hay usuarios con rol " + roleName, TypesResponse.WARNING), HttpStatus.OK);
@@ -339,6 +339,30 @@ public class UserService {
         authService.revokeAllUserTokens(user);
 
         return new ResponseEntity<>(new Message("Contraseña actualizada. Vuelve a iniciar sesión.", TypesResponse.SUCCESS),
+                HttpStatus.OK);
+    }
+
+    // Actualizar contraseña sin verificar la actual (para admin o reset)
+    public ResponseEntity<Message> updatePasswordWithoutCurrent(String email, String newPassword, String confirmPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email));
+
+        // Validaciones básicas
+        if (!newPassword.equals(confirmPassword)) {
+            return new ResponseEntity<>(new Message("La confirmación no coincide", TypesResponse.WARNING),
+                    HttpStatus.BAD_REQUEST);
+        }
+        if (newPassword.length() < 8) {
+            return new ResponseEntity<>(new Message("La nueva contraseña debe tener al menos 8 caracteres", TypesResponse.WARNING),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        // Actualizar
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdated_at(LocalDateTime.now());
+        userRepository.saveAndFlush(user);
+
+        return new ResponseEntity<>(new Message("Contraseña actualizada exitosamente", TypesResponse.SUCCESS),
                 HttpStatus.OK);
     }
 }

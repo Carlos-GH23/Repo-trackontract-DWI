@@ -136,6 +136,39 @@ public class ContractsService {
         return new ResponseEntity<>(new Message(contracts, "Contratos del abogado encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
     }
 
+    // Obtener empresas asignadas a un abogado (clientes únicos)
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> getEmpresasByAbogado(Long abogadoId) {
+        List<Object[]> contractsData = contractsRepository.findAllContractsByAbogado(abogadoId);
+        logger.info("Buscando empresas asignadas al abogado: {}", abogadoId);
+        
+        if (contractsData.isEmpty()) {
+            return new ResponseEntity<>(new Message(contractsData, "No hay empresas asignadas a este abogado", TypesResponse.WARNING), HttpStatus.OK);
+        }
+        
+        // Obtener clientes únicos de los contratos del abogado
+        List<java.util.Map<String, Object>> empresas = contractsData.stream()
+            .map(row -> {
+                java.util.Map<String, Object> empresa = new java.util.HashMap<>();
+                empresa.put("clientId", row[8]);
+                empresa.put("clientName", row[9]);
+                empresa.put("categoryId", row[10]);
+                empresa.put("categoryName", row[11]);
+                empresa.put("contractId", row[0]);
+                empresa.put("contractName", row[1]);
+                empresa.put("contractDescription", row[2]);
+                empresa.put("contractStatus", row[4]);
+                empresa.put("approvalStatus", row[5]);
+                empresa.put("dueDate", row[3]);
+                return empresa;
+            })
+            .distinct() // Eliminar duplicados por cliente
+            .collect(java.util.stream.Collectors.toList());
+        
+        logger.info("Empresas del abogado obtenidas correctamente");
+        return new ResponseEntity<>(new Message(empresas, "Empresas del abogado obtenidas", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
     // Buscar contratos por cliente específico
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findAllByClient(Long clientId) {
