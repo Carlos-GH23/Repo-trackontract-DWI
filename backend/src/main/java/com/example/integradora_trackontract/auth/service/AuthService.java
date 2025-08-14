@@ -17,6 +17,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
+
 import java.util.List;
 
 @Service
@@ -52,9 +57,20 @@ public class AuthService {
         User user = userRepository.findByEmail(request.email())
                         .orElseThrow(() -> new UsernameNotFoundException("No existe usuario con email " + request.email()));
 
-        //Mandar LockedException cuando esté bloqueado
-        if (!user.isStatus()) {
-            throw new LockedException("Cuenta bloqueada por exceder el número de intentos.");
+        LocalDateTime now = LocalDateTime.now();
+
+        // Si estaba bloqueado, verificar si ya venció el bloqueo
+        if (user.getLocked_until() != null) {
+            if (now.isBefore(user.getLocked_until())) {
+                long minutesLeft = Duration.between(now, user.getLocked_until()).toMinutes();
+                throw new LockedException("La cuenta está bloqueada. Intenta en " + minutesLeft + " minuto(s).");
+            } else {
+                // auto-desbloqueo
+                user.setLocked_until(null);
+                user.setStatus(true);
+                user.setLogin_attempts(0);
+                userRepository.save(user);
+            }
         }
 
         try {
@@ -73,19 +89,22 @@ public class AuthService {
             // bloquear al llegar a 3
             if (intentos >= 3){
                 user.setStatus(false);
+                user.setLocked_until(now.plusMinutes(30));
             }
             userRepository.save(user);
 
-            // Rejected por credenciales o account locked (si alcanzó 3)
-            if (!user.isStatus()){
-                throw new LockedException("Cuenta bloqueada por 3 intentos fallidos (Durante 30 minutos)");
+            if (user.getLocked_until() != null && now.isBefore(user.getLocked_until())) {
+                long minutesLeft = Duration.between(now, user.getLocked_until()).toMinutes();
+                throw new LockedException("Cuenta bloqueada por intentos fallidos. Intenta de nuevo en " + minutesLeft + " minuto(s).");
             }
             throw ex;
         }
 
         // si autenticacion exitosa: reiniciamos contador de intentos
-        if (user.getLogin_attempts() > 0){
+        if (user.getLogin_attempts() > 0 || user.getLocked_until() != null || !user.isStatus()){
             user.setLogin_attempts(0);
+            user.setLocked_until(null);
+            user.setStatus(true);
             userRepository.save(user);
         }
 

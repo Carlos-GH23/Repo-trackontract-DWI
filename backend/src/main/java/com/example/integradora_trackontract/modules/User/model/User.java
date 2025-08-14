@@ -52,10 +52,13 @@ public class User {
     @Column(name = "login_attempts", columnDefinition = "INT DEFAULT 0")
     private int login_attempts;
 
+    @Column(name = "locked_until")
+    private LocalDateTime locked_until;
+
     public User() {
     }
 
-    public User(Long id, String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
+    public User(Long id, String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, LocalDateTime locked_until, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
         this.id = id;
         this.name = name;
         this.lastName = lastName;
@@ -66,6 +69,7 @@ public class User {
         this.created_at = created_at;
         this.updated_at = updated_at;
         this.login_attempts = login_attempts;
+        this.locked_until = locked_until;
         this.tokens = tokens;
         this.audit_logs = audit_logs;
         this.password_resets = password_resets;
@@ -73,7 +77,7 @@ public class User {
         this.rol_id = rol_id;
     }
 
-    public User(String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
+    public User(String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, LocalDateTime locked_until, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
         this.name = name;
         this.lastName = lastName;
         this.email = email;
@@ -83,6 +87,7 @@ public class User {
         this.created_at = created_at;
         this.updated_at = updated_at;
         this.login_attempts = login_attempts;
+        this.locked_until = locked_until;
         this.tokens = tokens;
         this.audit_logs = audit_logs;
         this.password_resets = password_resets;
@@ -169,6 +174,9 @@ public class User {
     public void setLogin_attempts(int login_attempts) {
         this.login_attempts = login_attempts;
     }
+
+    public LocalDateTime getLocked_until() { return locked_until; }
+    public void setLocked_until(LocalDateTime locked_until) { this.locked_until = locked_until; }
 
     public List<Token> getTokens() {
         return tokens;
