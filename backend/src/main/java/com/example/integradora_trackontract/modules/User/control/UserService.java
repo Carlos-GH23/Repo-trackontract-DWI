@@ -7,6 +7,7 @@ import com.example.integradora_trackontract.modules.Contracts.control.ContractsS
 import com.example.integradora_trackontract.modules.Contracts.model.Contracts;
 import com.example.integradora_trackontract.modules.Contracts.model.ContractsDTO; /*Me marca error en esta importacion*/
 import com.example.integradora_trackontract.modules.Roles.model.Roles;
+import com.example.integradora_trackontract.modules.Roles.model.RolesRepository;
 import com.example.integradora_trackontract.modules.User.model.User;
 import com.example.integradora_trackontract.modules.User.model.UserDTO;
 import com.example.integradora_trackontract.modules.User.model.UserProfileDTO;
@@ -39,12 +40,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final RolesRepository rolesRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository,PasswordEncoder passwordEncoder,AuthService authService ) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthService authService, RolesRepository rolesRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
+        this.rolesRepository = rolesRepository;
     }
 
     //Busqueda de usuarios inactivos
@@ -70,9 +73,14 @@ public class UserService {
     //Guardar Usuarios
     @Transactional(rollbackFor = {SQLException.class})
     public ResponseEntity<Message> save(UserDTO dto) {
-        Optional<User> existingUser = userRepository.findByName(dto.getName());
+        logger.info("Iniciando proceso de creación de usuario - Email: {}", dto.getEmail());
+        logger.info("Datos recibidos - Nombre: {}, Apellido: {}, Email: {}, Teléfono: {}, Status: {}", 
+            dto.getName(), dto.getLast_name(), dto.getEmail(), dto.getPhoneNumber(), dto.getStatus());
+        
+        Optional<User> existingUser = userRepository.findByEmail(dto.getEmail());
         if (existingUser.isPresent()) {
-            return new ResponseEntity<>(new Message("El usuario ya existe", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+            logger.warn("Intento de crear usuario con email ya existente: {}", dto.getEmail());
+            return new ResponseEntity<>(new Message("El email ya está registrado", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
         if (dto.getName() == null || dto.getName().isEmpty()) {
             return new ResponseEntity<>(new Message("El nombre del usuario no puede ser nulo o vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
@@ -106,14 +114,55 @@ public class UserService {
         }
 
         String hashedPassword = passwordEncoder.encode(dto.getPassword());
+        logger.info("Contraseña encriptada generada correctamente");
 
-        Roles role = new Roles();
-        role.setId(2L);
-        User user = new User(dto.getName(), dto.getLast_name(), dto.getEmail(), dto.getPhoneNumber(), hashedPassword, true, LocalDateTime.now(), LocalDateTime.now(), 0, null, null, null, null, null, role);
+        // Buscar el rol ABOGADO
+        logger.info("Buscando rol ABOGADO en la base de datos...");
+        Optional<Roles> abogadoRole = rolesRepository.findByName("ABOGADO");
+        if (!abogadoRole.isPresent()) {
+            logger.error("Rol ABOGADO no encontrado en la base de datos");
+            return new ResponseEntity<>(new Message("Error interno: Rol ABOGADO no encontrado", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        logger.info("Rol ABOGADO encontrado - ID: {}, Nombre: {}", abogadoRole.get().getId(), abogadoRole.get().getName());
+
+        logger.info("Creando objeto User en memoria...");
+        User user = new User();
+        user.setName(dto.getName());
+        user.setLastName(dto.getLast_name());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setPassword(hashedPassword);
+        user.setStatus(true);
+        user.setCreated_at(LocalDateTime.now());
+        user.setUpdated_at(LocalDateTime.now());
+        user.setLogin_attempts(0);
+        user.setRol_id(abogadoRole.get());
+        
+        logger.info("Usuario creado en memoria - Email: {}, Nombre: {}, Apellido: {}, Teléfono: {}, Rol: {}, Status: {}", 
+            user.getEmail(), user.getName(), user.getLastName(), user.getPhoneNumber(), 
+            user.getRol_id().getName(), user.isStatus());
+        
+        logger.info("Guardando usuario en la base de datos...");
         user = userRepository.saveAndFlush(user);
         if (user == null) {
+            logger.error("Error: Usuario no se registró - resultado null");
             return new ResponseEntity<>(new Message("El usuario no se registró", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
         }
+        logger.info("Usuario guardado exitosamente en BD - ID: {}, Email: {}, Nombre: {}, Rol: {}", 
+            user.getId(), user.getEmail(), user.getName(), user.getRol_id().getName());
+        
+        // Verificar que se guardó correctamente
+        logger.info("Verificando que el usuario se guardó correctamente...");
+        Optional<User> verifyUser = userRepository.findByEmail(dto.getEmail());
+        if (verifyUser.isPresent()) {
+            User verifiedUser = verifyUser.get();
+            logger.info("Usuario verificado exitosamente en BD - ID: {}, Email: {}, Rol: {}, Status: {}", 
+                verifiedUser.getId(), verifiedUser.getEmail(), 
+                verifiedUser.getRol_id().getName(), verifiedUser.isStatus());
+        } else {
+            logger.error("ERROR: Usuario no se pudo verificar después de guardar - Email: {}", dto.getEmail());
+        }
+        
         logger.info("El registro ha sido realizado correctamente");
         return new ResponseEntity<>(new Message(user, "El usuario se registró correctamente", TypesResponse.SUCCESS), HttpStatus.CREATED);
     }

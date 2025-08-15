@@ -137,25 +137,13 @@ const Contract = () => {
             // Actualizar la lista de contratos
             await fetchContratos();
 
-            // Debug: verificar el estado del contrato
-            try {
-                const debugResponse = await fetch(`http://localhost:8080/contracts/${contrato.id}/debug`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    }
-                });
-                if (debugResponse.ok) {
-                    const debugData = await debugResponse.json();
-                }
-            } catch (debugError) {
-                // Error al debuggear contrato
-            }
+
 
             // Mostrar éxito
             Swal.fire({
                 title: '¡Contrato Aceptado!',
                 html: '<strong>✅ Contrato aceptado exitosamente</strong><br><br>' +
-                      'El contrato ha sido enviado al cliente por email y ya no se puede modificar.',
+                      'El contrato ha sido aceptado y ya no se puede modificar.',
                 icon: 'success',
                 showConfirmButton: true,
                 confirmButtonColor: '#7F56D9',
@@ -250,19 +238,7 @@ const Contract = () => {
             // Actualizar la lista de contratos
             await fetchContratos();
 
-            // Debug: verificar el estado del contrato
-            try {
-                const debugResponse = await fetch(`http://localhost:8080/contracts/${contratoRechazar.id}/debug`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    }
-                });
-                if (debugResponse.ok) {
-                    const debugData = await debugResponse.json();
-                }
-            } catch (debugError) {
-                // Error al debuggear contrato
-            }
+
 
             // Alerta de éxito
             Swal.fire({
@@ -288,25 +264,6 @@ const Contract = () => {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Mis Contratos Asignados</h1>
                 <div className="flex gap-2">
-                    <button
-                        onClick={async () => {
-                            const token = localStorage.getItem("accessToken");
-                            const userId = localStorage.getItem("userId");
-                            try {
-                                const response = await fetch(`http://localhost:8080/contracts/by-abogado/${userId}/debug`, {
-                                    headers: { 'Authorization': `Bearer ${token}` }
-                                });
-                                if (response.ok) {
-                                    const data = await response.json();
-                                }
-                            } catch (error) {
-                                // Error en debug
-                            }
-                        }}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                    >
-                        Debug
-                    </button>
                     <input
                         type="text"
                         placeholder="Buscar contrato..."
@@ -345,7 +302,7 @@ const Contract = () => {
                                         <span className={`text-sm font-medium px-2 py-1 rounded-full ${
                                             contrato.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                                         }`}>
-                                            {contrato.status ? "Aceptado y Notificado al Cliente" : "Pendiente de Aprobación"}
+                                            {contrato.status ? "Aceptado" : "Pendiente de Aprobación"}
                                         </span>
                                     </div>
                                 </div>
@@ -364,7 +321,7 @@ const Contract = () => {
                                     {contrato.status && (
                                         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                             <p className="text-blue-800 text-sm">
-                                                <strong>✅ Contrato Aceptado:</strong> Este contrato ha sido aceptado y se ha enviado una notificación por email al cliente. 
+                                                <strong>✅ Contrato Aceptado:</strong> Este contrato ha sido aceptado. 
                                                 No se pueden realizar más modificaciones.
                                             </p>
                                         </div>
