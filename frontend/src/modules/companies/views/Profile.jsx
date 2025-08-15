@@ -25,14 +25,35 @@ const ProfileCompa = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchProfile();
+        const ensureEmailAndFetch = async () => {
+                const token = localStorage.getItem("accessToken");
+                if (!token) return setErrorMsg("Falta token. Inicia sesión nuevamente.");
+
+                    let userEmail = localStorage.getItem("email");
+                if (!userEmail) {
+                      try {
+                            const me = await fetch("http://localhost:8080/users/me", {
+                                  headers: { Authorization: `Bearer ${token}` }
+                            });
+                            if (me.ok) {
+                                  const d = await me.json();
+                                  if (d?.email) {
+                                        userEmail = d.email;
+                                        localStorage.setItem("email", userEmail);
+                                      }
+                                }
+                          } catch {}
+                    }
+                fetchProfile();
+              };
+          ensureEmailAndFetch();
     }, []);
 
     const fetchProfile = async () => {
         try {
             setLoading(true);
             setErrorMsg("");
-            
+
             const token = localStorage.getItem("accessToken");
             const userEmail = localStorage.getItem("email");
 
@@ -42,19 +63,19 @@ const ProfileCompa = () => {
                 const missingItems = [];
                 if (!token) missingItems.push("Token de acceso");
                 if (!userEmail) missingItems.push("Email del usuario");
-                
+
                 setErrorMsg(`Faltan datos de autenticación: ${missingItems.join(", ")}. Por favor, inicia sesión nuevamente.`);
                 return;
             }
 
 
-            
+
             const response = await fetch(`http://localhost:8080/clients/me?email=${encodeURIComponent(userEmail)}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            
+
             console.log("Respuesta del servidor:", response.status, response.statusText);
 
             if (!response.ok) {
@@ -77,7 +98,7 @@ const ProfileCompa = () => {
                     representative_surnames: data.result.representative_surnames || "",
                     email: data.result.email || "",
                     phone: data.result.phone || "",
-                    status: data.result.status || true
+                    status: data.result.status ?? true
                 });
             }
         } catch (error) {
@@ -148,6 +169,12 @@ const ProfileCompa = () => {
                 })
             });
 
+            if (response.status === 401 || response.status === 403) {
+                   Swal.fire({ icon: "warning", title: "Sesión expirada", text: "Vuelve a iniciar sesión." })
+                     .then(() => { localStorage.clear(); window.location.href = "/"; });
+                   return;
+                 }
+
             if (!response.ok) {
                 const err = await response.json();
                 throw new Error(err.text || "Error al actualizar");
@@ -207,6 +234,12 @@ const ProfileCompa = () => {
                 })
             });
 
+            if (response.status === 401 || response.status === 403) {
+                   Swal.fire({ icon: "warning", title: "Sesión expirada", text: "Vuelve a iniciar sesión." })
+                     .then(() => { localStorage.clear(); window.location.href = "/"; });
+                   return;
+                 }
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.text || "Error al cambiar la contraseña");
@@ -221,7 +254,7 @@ const ProfileCompa = () => {
             }).then(() => {
                 // Limpiar localStorage
                 localStorage.clear();
-                
+
                 // Redirigir al login
                 window.location.href = "/";
             });
@@ -344,7 +377,7 @@ const ProfileCompa = () => {
             {errorMsg && (
                 <div style={{ textAlign: "center", margin: "10px 0" }}>
                     <p style={{ color: "red", marginBottom: "10px" }}>{errorMsg}</p>
-                    <button 
+                    <button
                         onClick={fetchProfile}
                         className="btn"
                         style={{ backgroundColor: "#007bff", color: "white" }}
@@ -381,7 +414,7 @@ const ProfileCompa = () => {
                 <div className="password-modal-overlay" onClick={closePasswordModal}>
                     <div className="password-modal" onClick={(e) => e.stopPropagation()}>
                         <h3>Nueva Contraseña</h3>
-                        
+
                         <div className="fila-contrasenas">
                             <div className="campo">
                                 <label htmlFor="newPassword">Nueva Contraseña:</label>
