@@ -1,62 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 import styles from "../styles/form-login.module.css";
-import { showErrorToast } from "../../../kernel/alerts";
+import { showErrorToast , showConfirmationWithoutCancel} from "../../../kernel/alerts";
 
 const FormLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  // 🔹 Estados para intentos y bloqueo
-  const [attempts, setAttempts] = useState(0);
-  const [isBlocked, setIsBlocked] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-
+  
   const navigate = useNavigate();
-
-  // Revisar si hay bloqueo guardado
-  useEffect(() => {
-    const blockedUntil = localStorage.getItem("blockedUntil");
-    if (blockedUntil) {
-      const diff = Math.floor((new Date(blockedUntil) - new Date()) / 1000);
-      if (diff > 0) {
-        setIsBlocked(true);
-        setTimeLeft(diff);
-      } else {
-        localStorage.removeItem("blockedUntil");
-      }
-    }
-  }, []);
-
-  // Temporizador para desbloquear
-  useEffect(() => {
-    if (isBlocked && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsBlocked(false);
-            localStorage.removeItem("blockedUntil");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [isBlocked, timeLeft]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isBlocked) {
-        showErrorToast({
-          title: "Error",
-          text: `Cuenta bloqueada. Intenta nuevamente en ${Math.ceil(timeLeft / 60)} minutos`,
-          timer: 4000
-        });
-      return;
+    // 👈 agregado: traer intentos guardados
+    let attempts = JSON.parse(localStorage.getItem("loginAttempts")) || {};
+
+    // 👈 agregado: si el usuario ya está bloqueado, no permitir login
+    if (attempts[email]?.blocked) {
+    showConfirmationWithoutCancel({
+        title: "Error",
+        message: "Tu cuenta está bloqueada por intentos fallidos..",
+        callback: () => { console.log("Alerta cerrada"); }
+    });
+    return;
     }
 
     try {
@@ -69,9 +37,10 @@ const FormLogin = () => {
       if (!response.ok) throw new Error("Credenciales incorrectas");
 
       const data = await response.json();
-
+      
+      // El backend devuelve { token, user }
       const { token, user } = data;
-
+      
       if (!token || typeof token !== 'string') {
         throw new Error("Token no encontrado o inválido en la respuesta del servidor");
       }
@@ -80,17 +49,21 @@ const FormLogin = () => {
         throw new Error("Información de usuario no encontrada en la respuesta del servidor");
       }
 
+      // 👈 agregado: si login es correcto, reiniciar intentos del usuario
+      attempts[email] = { count: 0, blocked: false };
+      localStorage.setItem("loginAttempts", JSON.stringify(attempts));
+
       // Guarda token
       localStorage.setItem("accessToken", token);
-
+      
       // Guarda información del usuario
       localStorage.setItem("userId", user.id);
       localStorage.setItem("user", user.name);
       localStorage.setItem("email", user.email);
       localStorage.setItem("role", user.role);
 
-      // Decodifica token
-      jwtDecode(token);
+      // Decodifica token para verificar
+      const decoded = jwtDecode(token);
 
       // Redirecciona según rol
       if (user.role === "ADMIN") {
@@ -103,28 +76,24 @@ const FormLogin = () => {
         alert("Rol no reconocido: " + user.role);
       }
     } catch (err) {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
+      // 👈 agregado: incrementar intentos de este usuario
+      const userAttempts = attempts[email]?.count || 0;
+      const newCount = userAttempts + 1;
 
-      if (newAttempts < 3) {
-        showErrorToast({
-          title: "Error",
-          text: `Credenciales incorrectas. Te quedan ${3 - newAttempts} intento(s).`,
-          timer: 4000
-        });
-      } else {
-        // Bloquear por 30 min
-        const unblockTime = new Date(Date.now() + 30 * 60 * 1000);
-        localStorage.setItem("blockedUntil", unblockTime.toISOString());
-        setIsBlocked(true);
-        setTimeLeft(30 * 60);
-        setAttempts(0);
-          showErrorToast({
-          title: "Error",
-          text: `Cuenta bloqueada, intenta de nuevo después de 30 minutos.`,
-          timer: 4000
-        });
-      }
+      attempts[email] = {
+        count: newCount,
+        blocked: newCount >= 3, // bloquear al llegar a 3
+      };
+
+      localStorage.setItem("loginAttempts", JSON.stringify(attempts));
+
+      showErrorToast({
+        title: "Error",
+        text: attempts[email].blocked
+          ? "Cuenta bloqueada por 3 intentos fallidos"
+          : `Credenciales incorrectas. Intento ${newCount}/3`,
+        timer: 4000
+      });
     }
   };
 
@@ -132,24 +101,6 @@ const FormLogin = () => {
 
   return (
     <div className={styles.container}>
-      {/* 🔹 Bloqueo con círculo */}
-      {isBlocked && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-          background: "rgba(0,0,0,0.5)", display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "18px", zIndex: 9999
-        }}>
-          <div style={{
-            width: "80px", height: "80px", border: "6px solid #ccc",
-            borderTop: "6px solid red", borderRadius: "50%",
-            animation: "spin 1s linear infinite"
-          }}></div>
-          <p style={{ marginTop: "20px" }}>
-            Cuenta bloqueada. Espera {Math.ceil(timeLeft / 60)} minutos
-          </p>
-        </div>
-      )}
-
       <div className={styles.leftPanel}>
         <div className={styles.logoContainer}>
           <div className={styles.logoWrapper}>
@@ -167,7 +118,6 @@ const FormLogin = () => {
                 <path d="M8 21h8" />
                 <path d="M12 17v4" />
                 <path d="M4 15s2-1 4-1 4 1 4 1-2 1-4 1-4-1-4-1Z" />
-                
                 <path d="M16 15s2-1 4-1 4 1 4 1-2 1-4 1-4-1-4-1Z" />
               </svg>
             </div>
@@ -212,16 +162,32 @@ const FormLogin = () => {
               />
               <button type="button" className={styles.passwordToggle} onClick={togglePasswordVisibility}>
                 {showPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
@@ -245,4 +211,4 @@ const FormLogin = () => {
   )
 }
 
-export default FormLogin;
+export default FormLogin

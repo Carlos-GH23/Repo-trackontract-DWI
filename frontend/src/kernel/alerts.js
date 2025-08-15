@@ -47,21 +47,67 @@ export function showConfirmation(title, message, type = 'warning', callback, can
     });
 }
 
-export function showConfirmationWithoutCancel(title, message, type = 'warning', callback, cancelCallback = () => {}) {
+export function showConfirmationWithoutCancel({ title, message, type = 'warning', callback = () => {}, cancelCallback = () => {} }) {
+    const DURATION = 30 * 60 * 1000; // 30 minutos en ms
+    let timerInterval;
+
     Swal.fire({
         title: title,
-        text: message,
+        html: `
+            <div style="display:flex;flex-direction:column;align-items:center;gap:15px;">
+                <p>${message}</p>
+                <div id="circular-progress" style="
+                    width:100px;
+                    height:100px;
+                    border-radius:50%;
+                    border: 8px solid #eee;
+                    border-top: 8px solid #3085d6;
+                    animation: spin ${DURATION}ms linear forwards;
+                "></div>
+                <p id="countdown-text"></p>
+            </div>
+        `,
         icon: type,
         showCancelButton: false,
         confirmButtonText: 'Aceptar',
+        didOpen: () => {
+            const content = Swal.getHtmlContainer();
+            const countdownText = content.querySelector("#countdown-text");
+            let timeLeft = DURATION / 1000; // segundos totales
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownText.textContent = `Tiempo restante: ${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    Swal.close(); // cerrar automáticamente cuando acabe
+                }
+            }, 1000);
+        },
+        willClose: () => {
+            clearInterval(timerInterval);
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             callback();
         } else {
-            cancelCallback && cancelCallback();
+            cancelCallback();
         }
     });
 }
+
+// Animación CSS para el giro circular
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}`;
+document.head.appendChild(style);
+
 
 export function showConfirmationAsync(title, message, type = 'warning', callback, cancelCallback) {
     Swal.fire({
