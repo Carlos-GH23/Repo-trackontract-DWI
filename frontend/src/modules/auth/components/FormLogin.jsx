@@ -2,16 +2,30 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
 import styles from "../styles/form-login.module.css";
-import { showErrorToast } from "../../../kernel/alerts";
+import { showErrorToast , showConfirmationWithoutCancel} from "../../../kernel/alerts";
 
 const FormLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 👈 agregado: traer intentos guardados
+    let attempts = JSON.parse(localStorage.getItem("loginAttempts")) || {};
+
+    // 👈 agregado: si el usuario ya está bloqueado, no permitir login
+    if (attempts[email]?.blocked) {
+    showConfirmationWithoutCancel({
+        title: "Error",
+        message: "Tu cuenta está bloqueada por intentos fallidos..",
+        callback: () => { console.log("Alerta cerrada"); }
+    });
+    return;
+    }
 
     try {
       const response = await fetch("http://localhost:8080/auth/login", {
@@ -20,7 +34,7 @@ const FormLogin = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) throw new Error("Error al iniciar sesión");
+      if (!response.ok) throw new Error("Credenciales incorrectas");
 
       const data = await response.json();
       
@@ -34,6 +48,10 @@ const FormLogin = () => {
       if (!user || typeof user !== 'object') {
         throw new Error("Información de usuario no encontrada en la respuesta del servidor");
       }
+
+      // 👈 agregado: si login es correcto, reiniciar intentos del usuario
+      attempts[email] = { count: 0, blocked: false };
+      localStorage.setItem("loginAttempts", JSON.stringify(attempts));
 
       // Guarda token
       localStorage.setItem("accessToken", token);
@@ -58,9 +76,22 @@ const FormLogin = () => {
         alert("Rol no reconocido: " + user.role);
       }
     } catch (err) {
+      // 👈 agregado: incrementar intentos de este usuario
+      const userAttempts = attempts[email]?.count || 0;
+      const newCount = userAttempts + 1;
+
+      attempts[email] = {
+        count: newCount,
+        blocked: newCount >= 3, // bloquear al llegar a 3
+      };
+
+      localStorage.setItem("loginAttempts", JSON.stringify(attempts));
+
       showErrorToast({
         title: "Error",
-        text: err.message || "Credenciales incorrectas o cuenta bloqueada",
+        text: attempts[email].blocked
+          ? "Cuenta bloqueada por 3 intentos fallidos"
+          : `Credenciales incorrectas. Intento ${newCount}/3`,
         timer: 4000
       });
     }
@@ -87,7 +118,6 @@ const FormLogin = () => {
                 <path d="M8 21h8" />
                 <path d="M12 17v4" />
                 <path d="M4 15s2-1 4-1 4 1 4 1-2 1-4 1-4-1-4-1Z" />
-                
                 <path d="M16 15s2-1 4-1 4 1 4 1-2 1-4 1-4-1-4-1Z" />
               </svg>
             </div>
