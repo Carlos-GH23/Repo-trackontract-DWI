@@ -802,6 +802,10 @@ public class ContractsService {
                 contractId, contract.isStatus(), 
                 contract.getAbogado_id() != null ? contract.getAbogado_id().getId() : "null");
             
+            // NOTA: Este método ahora está obsoleto. Se debe usar el nuevo sistema de rechazos
+            // a través de ContractRejectionService.createRejection()
+            logger.warn("Método obsoleto rejectContract() llamado. Use ContractRejectionService.createRejection() en su lugar.");
+            
             // Por ahora, simplemente desactivamos el contrato
             // En el futuro se puede implementar la lógica completa de aprobaciones
             boolean oldStatus = contract.isStatus();
@@ -823,7 +827,7 @@ public class ContractsService {
             }
             
             logger.info("Contrato {} rechazado exitosamente por abogado {} con motivo: {}", contractId, abogadoId, rejectionReason);
-            return new ResponseEntity<>(new Message(savedContract, "Contrato rechazado exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
+            return new ResponseEntity<>(new Message(savedContract, "Contrato rechazado exitosamente (método obsoleto)", TypesResponse.SUCCESS), HttpStatus.OK);
             
         } catch (Exception e) {
             logger.error("Error rechazando contrato {}: {}", contractId, e.getMessage());

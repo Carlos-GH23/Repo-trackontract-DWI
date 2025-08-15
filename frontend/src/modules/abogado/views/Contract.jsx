@@ -198,14 +198,18 @@ const Contract = () => {
                 throw new Error("No se pudo identificar al usuario");
             }
 
-            // Llamar al backend para rechazar el contrato
-            const response = await fetch(`http://localhost:8080/contracts/${contratoRechazar.id}/reject?abogadoId=${userId}`, {
+            // Llamar al nuevo sistema de rechazos
+            const response = await fetch(`http://localhost:8080/contract-rejections/reject`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(comentario.trim())
+                body: JSON.stringify({
+                    contractId: contratoRechazar.id,
+                    abogadoId: parseInt(userId),
+                    rejectionReason: comentario.trim()
+                })
             });
 
             if (!response.ok) {
@@ -244,7 +248,7 @@ const Contract = () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Contrato rechazado',
-                text: 'El contrato ha sido rechazado correctamente.',
+                text: 'El contrato ha sido rechazado correctamente. Se ha notificado al administrador para su revisión.',
                 confirmButtonColor: '#7F56D9',
             });
         } catch (error) {
