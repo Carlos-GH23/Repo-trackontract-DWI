@@ -42,7 +42,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import java.io.ByteArrayOutputStream;
 
 
