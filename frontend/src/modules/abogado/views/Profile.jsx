@@ -13,6 +13,7 @@ const ProfileAbo = () => {
     roleName: ""
   });
 
+  const [emailOriginal, setEmailOriginal] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -40,13 +41,21 @@ const ProfileAbo = () => {
             lastName: data.lastName || "",
             email: data.email || "",
             phoneNumber: data.phoneNumber || "",
-            status: data.status || true, // Agregar el status
+            status: data.status ?? true, // Agregar el status
             roleName: data.roleName || ""
           });
+          setEmailOriginal(data.email ?? "");
         })
         .catch(err => {
-          console.error(err);
-          setErrorMsg("No se pudo cargar el perfil.");
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo cargar el perfil. Inicia sesión nuevamente."
+          }).then(() => {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            window.location.href = "/";
+          });
         });
   }, []);
 
@@ -67,7 +76,8 @@ const ProfileAbo = () => {
     setPasswordError(""); // Limpiar error al escribir
   };
 
-  const handleSave = () => {
+  const handleSave = (e) => {
+    e.preventDefault();
     setErrorMsg(""); // limpiar errores
 
     if (!profile.phoneNumber || profile.phoneNumber.trim() === "") {
@@ -78,7 +88,7 @@ const ProfileAbo = () => {
     const token = localStorage.getItem("accessToken");
     if (!token || !profile.id) return;
 
-    fetch("http://localhost:8080/users/update", {
+    fetch("http://localhost:8080/users/me", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -93,27 +103,45 @@ const ProfileAbo = () => {
         status: profile.status
       })
     })
-        .then(async res => {
-          if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.text || "Error al actualizar");
+        .then(async (res) => {
+          const body = await res.json().catch(() => ({}));
+
+          // Sesión expirada/No autorizada
+          if (res.status === 401 || res.status === 403) {
+            Swal.fire({
+              icon: "warning",
+              title: "Sesión expirada",
+              text: "Vuelve a iniciar sesión."
+            }).then(() => {
+              localStorage.removeItem("accessToken");
+              localStorage.removeItem("refreshToken");
+              window.location.href = "/";
+            });
+            return;
           }
-          return res.json();
-        })
-        .then(() => {
+
+          if (!res.ok) {
+            throw new Error(body.text || "Error al actualizar perfil");
+          }
+
+          // Si cambió el correo → fuerza re-login (misma lógica que ADMIN)
+          if (profile.email !== emailOriginal) {
+            Swal.fire({
+              icon: "success",
+              title: "Perfil actualizado",
+              text: "Has cambiado tu correo. Por seguridad, vuelve a iniciar sesión."
+            }).then(() => {
+              localStorage.removeItem("accessToken");
+              localStorage.removeItem("refreshToken");
+              window.location.href = "/";
+            });
+            return;
+          }
+          setEmailOriginal(profile.email);
           setEditMode(false);
-          Swal.fire({
-            icon: "success",
-            title: "¡Éxito!",
-            text: "Perfil actualizado con éxito",
-            timer: 2000,
-            showConfirmButton: false
-          });
+          Swal.fire({ icon: "success", title: "Perfil actualizado", timer: 1800, showConfirmButton: false });
         })
-        .catch(err => {
-          console.error(err);
-          setErrorMsg(err.message);
-        });
+        .catch((err) => setErrorMsg(err.message));
   };
 
   const handlePasswordChangeSubmit = async () => {
@@ -148,6 +176,19 @@ const ProfileAbo = () => {
             confirmPassword: passwordData.confirmPassword
           })
         });
+
+            if (response.status === 401 || response.status === 403) {
+                 Swal.fire({
+                       icon: "warning",
+                       title: "Sesión expirada",
+                       text: "Vuelve a iniciar sesión."
+                 }).then(() => {
+                     localStorage.removeItem("accessToken");
+                     localStorage.removeItem("refreshToken");
+                     window.location.href = "/";
+                   });
+                 return;
+               }
 
       if (!response.ok) {
         const errorData = await response.json();
