@@ -1,5 +1,5 @@
 // src/routes/AppRouter.jsx
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import Login from "../modules/auth/views/Login"
 import PasswordRecoveryForm from "../modules/auth/views/PasswordRecoveryForm"
 import LayoutAdmin from "../modules/admin/components/layout/layoutAdmin"
@@ -35,6 +35,7 @@ const AppRouter = () => {
       <Routes>
         {/* Rutas públicas */}
         <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/forgot-password" element={<PasswordRecoveryForm />} />
         {/* Rutas protegidas para ADMIN */}
         <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>

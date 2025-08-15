@@ -9,11 +9,23 @@ export default function Contratos() {
 
   const [filtroStatus, setFiltroStatus] = useState(null); // null = todos, true=activos, false=inactivos
   const [filtroNombre, setFiltroNombre] = useState("");
+  
+
 
   const fetchContratos = async (statusFilter = filtroStatus) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
+      const userRole = localStorage.getItem("role");
+      
+      if (!token) {
+        throw new Error("No hay token de autenticación");
+      }
+      
+      if (!userRole || (userRole !== "ADMIN" && userRole !== "ABOGADO")) {
+        throw new Error("No tienes permisos para acceder a esta funcionalidad");
+      }
+      
       let url = "";
 
       if (statusFilter !== null) {
@@ -28,7 +40,18 @@ export default function Contratos() {
         },
       });
 
-      if (!response.ok) throw new Error("Error al cargar contratos");
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para acceder a esta funcionalidad. Rol actual: " + userRole);
+      }
+      
+      if (response.status === 401) {
+        throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente");
+      }
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText || "Error al cargar contratos"}`);
+      }
 
       const data = await response.json();
 
@@ -41,8 +64,12 @@ export default function Contratos() {
       }
 
     } catch (error) {
-      console.error(error);
-      Swal.fire("Error", error.message, "error");
+      Swal.fire({
+        title: "Error",
+        text: error.message,
+        icon: "error",
+        confirmButtonText: "Entendido"
+      });
     } finally {
       setLoading(false);
     }
@@ -83,7 +110,6 @@ export default function Contratos() {
       Swal.fire("Eliminado", "El contrato ha sido eliminado.", "success");
       setContratos((prev) => prev.filter((cont) => cont.id !== id));
     } catch (error) {
-      console.error(error);
       Swal.fire("Error", error.message, "error");
     }
   };
@@ -101,27 +127,7 @@ export default function Contratos() {
               ${contrato.status ? "Activo" : "Inactivo"}
             </span>
           </div>
-          ${contrato.approvalStatus ? `
-          <div class="flex items-center justify-between">
-            <span class="font-semibold text-gray-700">Estado de Aprobación:</span>
-            <span class="px-2 py-1 text-xs rounded-full font-medium ${
-              contrato.approvalStatus === 'ACEPTADO' ? "bg-blue-100 text-blue-800" :
-              contrato.approvalStatus === 'RECHAZADO' ? "bg-red-100 text-red-800" :
-              "bg-yellow-100 text-yellow-800"
-            }">
-              ${contrato.approvalStatus === 'ACEPTADO' ? 'Aceptado' :
-               contrato.approvalStatus === 'RECHAZADO' ? 'Rechazado' :
-               'Pendiente'}
-            </span>
-          </div>
-          ` : `
-          <div class="flex items-center justify-between">
-            <span class="font-semibold text-gray-700">Estado de Aprobación:</span>
-            <span class="px-2 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-800">
-              Pendiente
-            </span>
-          </div>
-          `}
+
           <div>
             <span class="font-semibold text-gray-700">Cliente:</span>
             <p class="text-gray-600 mt-1 break-words">${contrato.client_id?.name || "N/A"}</p>
@@ -242,22 +248,7 @@ export default function Contratos() {
                           >
                             {contrato.status ? "Activo" : "Inactivo"}
                           </span>
-                          {contrato.approvalStatus && (
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                              contrato.approvalStatus === 'ACEPTADO' ? "bg-blue-100 text-blue-800" :
-                              contrato.approvalStatus === 'RECHAZADO' ? "bg-red-100 text-red-800" :
-                              "bg-yellow-100 text-yellow-800"
-                            }`}>
-                              {contrato.approvalStatus === 'ACEPTADO' ? 'Aceptado' :
-                               contrato.approvalStatus === 'RECHAZADO' ? 'Rechazado' :
-                               'Pendiente'}
-                            </span>
-                          )}
-                          {!contrato.approvalStatus && (
-                            <span className="text-xs px-2 py-1 rounded-full font-medium bg-yellow-100 text-yellow-800">
-                              Pendiente
-                            </span>
-                          )}
+                          
                         </div>
                       </div>
 

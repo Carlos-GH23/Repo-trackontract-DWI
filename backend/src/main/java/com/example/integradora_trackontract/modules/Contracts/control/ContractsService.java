@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import com.example.integradora_trackontract.modules.User.model.User;
 import com.example.integradora_trackontract.modules.User.model.UserRepository;
@@ -62,42 +63,17 @@ public class ContractsService {
         this.userRepository = userRepository;
     }
 
-    //Busqueda de contractos inactivos
-    @Transactional(readOnly = true)
-    public List<Contracts> findAllByStatusIsFalse(Boolean status) {
-        logger.info("Buscando contratos con estado inactivo");
-        return contractsRepository.findAllByStatusIsFalse();
-    }
+
 
     //Busqueda de contratos
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findAll() {
-        List<Object[]> contractsData = contractsRepository.findAllContractsWithBasicInfo();
+        List<Contracts> contracts = contractsRepository.findAllWithClientAndCategory();
         logger.info("La búsqueda ha sido realizada correctamente");
         
-        if (contractsData.isEmpty()) {
-            return new ResponseEntity<>(new Message(contractsData, "No hay contratos registrados", TypesResponse.WARNING), HttpStatus.OK);
+        if (contracts.isEmpty()) {
+            return new ResponseEntity<>(new Message(contracts, "No hay contratos registrados", TypesResponse.WARNING), HttpStatus.OK);
         }
-        
-        // Convertir Object[] a Map para evitar referencias circulares
-        List<java.util.Map<String, Object>> contracts = contractsData.stream()
-            .map(row -> {
-                java.util.Map<String, Object> contract = new java.util.HashMap<>();
-                contract.put("id", row[0]);
-                contract.put("name", row[1]);
-                contract.put("description", row[2]);
-                contract.put("due_date", row[3]);
-                contract.put("status", row[4]);
-                contract.put("approvalStatus", row[5]);
-                contract.put("approvedAt", row[6]);
-                contract.put("rejectionReason", row[7]);
-                contract.put("client_id", java.util.Map.of("id", row[8], "name", row[9]));
-                contract.put("category_id", java.util.Map.of("id", row[10], "name", row[11]));
-                contract.put("abogado_id", java.util.Map.of("id", row[12], "name", row[13], "lastName", row[14]));
-                
-                return contract;
-            })
-            .collect(java.util.stream.Collectors.toList());
         
         logger.info("Listado de contratos obtenido correctamente");
         return new ResponseEntity<>(new Message(contracts, "Listado de contratos", TypesResponse.SUCCESS), HttpStatus.OK);
@@ -106,31 +82,12 @@ public class ContractsService {
     // Buscar contratos por abogado específico
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findAllByAbogado(Long abogadoId) {
-        List<Object[]> contractsData = contractsRepository.findAllContractsByAbogado(abogadoId);
+        List<Contracts> contracts = contractsRepository.findAllByAbogado(abogadoId);
         logger.info("Buscando contratos para el abogado ID: {}", abogadoId);
         
-        if (contractsData.isEmpty()) {
-            return new ResponseEntity<>(new Message(contractsData, "No hay contratos asignados a este abogado", TypesResponse.WARNING), HttpStatus.OK);
+        if (contracts.isEmpty()) {
+            return new ResponseEntity<>(new Message(contracts, "No hay contratos asignados a este abogado", TypesResponse.WARNING), HttpStatus.OK);
         }
-        
-        // Convertir Object[] a Map para evitar referencias circulares
-        List<java.util.Map<String, Object>> contracts = contractsData.stream()
-            .map(row -> {
-                java.util.Map<String, Object> contract = new java.util.HashMap<>();
-                contract.put("id", row[0]);
-                contract.put("name", row[1]);
-                contract.put("description", row[2]);
-                contract.put("due_date", row[3]);
-                contract.put("status", row[4]);
-                contract.put("approvalStatus", row[5]);
-                contract.put("approvedAt", row[6]);
-                contract.put("rejectionReason", row[7]);
-                contract.put("client_id", java.util.Map.of("id", row[8], "name", row[9]));
-                contract.put("category_id", java.util.Map.of("id", row[10], "name", row[11]));
-                contract.put("abogado_id", java.util.Map.of("id", row[12], "name", row[13], "lastName", row[14]));
-                return contract;
-            })
-            .collect(java.util.stream.Collectors.toList());
         
         logger.info("Contratos del abogado obtenidos correctamente");
         return new ResponseEntity<>(new Message(contracts, "Contratos del abogado encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
@@ -139,27 +96,26 @@ public class ContractsService {
     // Obtener empresas asignadas a un abogado (clientes únicos)
     @Transactional(readOnly = true)
     public ResponseEntity<Message> getEmpresasByAbogado(Long abogadoId) {
-        List<Object[]> contractsData = contractsRepository.findAllContractsByAbogado(abogadoId);
+        List<Contracts> contracts = contractsRepository.findAllByAbogado(abogadoId);
         logger.info("Buscando empresas asignadas al abogado: {}", abogadoId);
         
-        if (contractsData.isEmpty()) {
-            return new ResponseEntity<>(new Message(contractsData, "No hay empresas asignadas a este abogado", TypesResponse.WARNING), HttpStatus.OK);
+        if (contracts.isEmpty()) {
+            return new ResponseEntity<>(new Message(contracts, "No hay empresas asignadas a este abogado", TypesResponse.WARNING), HttpStatus.OK);
         }
         
         // Obtener clientes únicos de los contratos del abogado
-        List<java.util.Map<String, Object>> empresas = contractsData.stream()
-            .map(row -> {
+        List<java.util.Map<String, Object>> empresas = contracts.stream()
+            .map(contract -> {
                 java.util.Map<String, Object> empresa = new java.util.HashMap<>();
-                empresa.put("clientId", row[8]);
-                empresa.put("clientName", row[9]);
-                empresa.put("categoryId", row[10]);
-                empresa.put("categoryName", row[11]);
-                empresa.put("contractId", row[0]);
-                empresa.put("contractName", row[1]);
-                empresa.put("contractDescription", row[2]);
-                empresa.put("contractStatus", row[4]);
-                empresa.put("approvalStatus", row[5]);
-                empresa.put("dueDate", row[3]);
+                empresa.put("clientId", contract.getClient_id().getId());
+                empresa.put("clientName", contract.getClient_id().getName());
+                empresa.put("categoryId", contract.getCategory_id().getId());
+                empresa.put("categoryName", contract.getCategory_id().getName());
+                empresa.put("contractId", contract.getId());
+                empresa.put("contractName", contract.getName());
+                empresa.put("contractDescription", contract.getDescription());
+                empresa.put("status", contract.isStatus());
+                empresa.put("dueDate", contract.getDue_date());
                 return empresa;
             })
             .distinct() // Eliminar duplicados por cliente
@@ -172,37 +128,14 @@ public class ContractsService {
     // Buscar contratos por cliente específico
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findAllByClient(Long clientId) {
-        List<Object[]> contractsData = contractsRepository.findAllContractsByClient(clientId);
+        List<Contracts> contracts = contractsRepository.findAllByClient(clientId);
         logger.info("Buscando contratos para el cliente ID: {}", clientId);
-        logger.info("Contratos encontrados en BD: {}", contractsData.size());
+        logger.info("Contratos encontrados en BD: {}", contracts.size());
         
-        if (contractsData.isEmpty()) {
+        if (contracts.isEmpty()) {
             logger.info("No hay contratos para el cliente ID: {}", clientId);
-            return new ResponseEntity<>(new Message(contractsData, "No hay contratos para este cliente", TypesResponse.WARNING), HttpStatus.OK);
+            return new ResponseEntity<>(new Message(contracts, "No hay contratos para este cliente", TypesResponse.WARNING), HttpStatus.OK);
         }
-        
-        // Convertir Object[] a Map para evitar referencias circulares
-        List<java.util.Map<String, Object>> contracts = contractsData.stream()
-            .map(row -> {
-                java.util.Map<String, Object> contract = new java.util.HashMap<>();
-                contract.put("id", row[0]);
-                contract.put("name", row[1]);
-                contract.put("description", row[2]);
-                contract.put("due_date", row[3]);
-                contract.put("status", row[4]);
-                contract.put("approvalStatus", row[5]);
-                contract.put("approvedAt", row[6]);
-                contract.put("rejectionReason", row[7]);
-                contract.put("client_id", java.util.Map.of("id", row[8], "name", row[9]));
-                contract.put("category_id", java.util.Map.of("id", row[10], "name", row[11]));
-                contract.put("abogado_id", java.util.Map.of("id", row[12], "name", row[13], "lastName", row[14]));
-                
-                logger.info("Contrato procesado - ID: {}, Name: {}, ApprovalStatus: {}", 
-                    row[0], row[1], row[5]);
-                
-                return contract;
-            })
-            .collect(java.util.stream.Collectors.toList());
         
         logger.info("Contratos del cliente procesados: {}", contracts.size());
         logger.info("Contratos del cliente obtenidos correctamente");
@@ -225,33 +158,13 @@ public class ContractsService {
         logger.info("Cliente encontrado - ID: {}, Nombre: {}, Email: {}", clientId, client.get().getName(), userEmail);
         
         // Ahora buscar contratos por el ID del cliente
-        List<Object[]> contractsData = contractsRepository.findAllContractsByClient(clientId);
-        logger.info("Contratos encontrados en BD para cliente ID {}: {}", clientId, contractsData.size());
+        List<Contracts> contracts = contractsRepository.findAllByClient(clientId);
+        logger.info("Contratos encontrados en BD para cliente ID {}: {}", clientId, contracts.size());
         
-        if (contractsData.isEmpty()) {
+        if (contracts.isEmpty()) {
             logger.info("No hay contratos para el cliente con email: {}", userEmail);
-            return new ResponseEntity<>(new Message(contractsData, "No hay contratos para este cliente", TypesResponse.WARNING), HttpStatus.OK);
+            return new ResponseEntity<>(new Message(contracts, "No hay contratos para este cliente", TypesResponse.WARNING), HttpStatus.OK);
         }
-        
-        // Convertir Object[] a Map para evitar referencias circulares
-        List<java.util.Map<String, Object>> contracts = contractsData.stream()
-            .map(row -> {
-                java.util.Map<String, Object> contract = new java.util.HashMap<>();
-                contract.put("id", row[0]);
-                contract.put("name", row[1]);
-                contract.put("description", row[2]);
-                contract.put("due_date", row[3]);
-                contract.put("status", row[4]);
-                contract.put("approvalStatus", row[5]);
-                contract.put("approvedAt", row[6]);
-                contract.put("rejectionReason", row[7]);
-                contract.put("client_id", java.util.Map.of("id", row[8], "name", row[9]));
-                contract.put("category_id", java.util.Map.of("id", row[10], "name", row[11]));
-                contract.put("abogado_id", java.util.Map.of("id", row[12], "name", row[13], "lastName", row[14]));
-                
-                return contract;
-            })
-            .collect(java.util.stream.Collectors.toList());
         
         logger.info("Contratos del usuario procesados: {}", contracts.size());
         logger.info("Contratos del usuario obtenidos correctamente");
@@ -287,6 +200,13 @@ public class ContractsService {
             return new ResponseEntity<>(new Message("El abogado del contrato no puede ser nulo o no existe", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
 
+        // Validar regla de negocio: Un cliente solo puede tener un contrato activo
+        int activeContractsCount = contractsRepository.countActiveContractsByClient(dto.getClientsDTO().getId());
+        
+        if (activeContractsCount > 0) {
+            return new ResponseEntity<>(new Message("El cliente ya tiene un contrato activo. Un cliente solo puede tener un contrato asignado a la vez.", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+
         Clients clients = clientsRepository.findById(dto.getClientsDTO().getId())
                     .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
         Categories categories = categoriesRepository.findById(dto.getCategoriesDTO().getId())
@@ -301,7 +221,6 @@ public class ContractsService {
         Contracts contracts = new Contracts(dto.getName(), dto.getDescription(), dto.getDue_date(), true, clients, categories);
         contracts.setStatus(true);
         contracts.setAbogado_id(abogado);
-        contracts.setApprovalStatus(Contracts.ApprovalStatus.PENDIENTE);
         
         logger.info("Contrato creado en memoria - Cliente ID: {}, Abogado ID: {}", 
             contracts.getClient_id().getId(), contracts.getAbogado_id().getId());
@@ -344,15 +263,27 @@ public class ContractsService {
         contracts.setDue_date(dto.getDue_date());
         contracts.setStatus(dto.getStatus());
         
-        // Mantener el approvalStatus existente si no se proporciona uno nuevo
-        if (dto.getApprovalStatus() != null) {
-            contracts.setApprovalStatus(Contracts.ApprovalStatus.valueOf(dto.getApprovalStatus()));
-        }
+
         Optional<Clients> clientsOptional = clientsRepository.findById(dto.getClientsDTO().getId());
         if (!clientsOptional.isPresent()) {
             return new ResponseEntity<>(new Message("Cliente no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
         }
         Clients clients = clientsOptional.get();
+
+        // Validar regla de negocio: Un cliente solo puede tener un contrato activo
+        // Solo validar si se está cambiando el cliente o si el contrato se está activando
+        if (!clients.getId().equals(contracts.getClient_id().getId()) || dto.getStatus()) {
+            int activeContractsCount = contractsRepository.countActiveContractsByClient(clients.getId());
+            
+            // Si se está activando este contrato, restar 1 del conteo
+            if (dto.getStatus() && contracts.getId().equals(dto.getId())) {
+                activeContractsCount = Math.max(0, activeContractsCount - 1);
+            }
+            
+            if (activeContractsCount > 0) {
+                return new ResponseEntity<>(new Message("El cliente ya tiene un contrato activo. Un cliente solo puede tener un contrato asignado a la vez.", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+            }
+        }
 
         Optional<Categories> categoriesOptional = categoriesRepository.findById(dto.getCategoriesDTO().getId());
         if (!categoriesOptional.isPresent()) {
@@ -385,14 +316,50 @@ public class ContractsService {
                 return new ResponseEntity<>(new Message("Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
             }
             Contracts contracts = contractsOptional.get();
+            
+            // Si se va a activar el contrato, validar que el cliente no tenga otro activo
+            if (!contracts.isStatus()) { // Si está inactivo y se va a activar
+                int activeContractsCount = contractsRepository.countActiveContractsByClient(contracts.getClient_id().getId());
+                
+                if (activeContractsCount > 0) {
+                    return new ResponseEntity<>(new Message("No se puede activar este contrato. El cliente ya tiene un contrato activo.", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+                }
+            }
+            
             contracts.setStatus(!contracts.isStatus());
             contracts = contractsRepository.saveAndFlush(contracts);
             if (contracts == null) {
                 return new ResponseEntity<>(new Message("El status del contrato no se actualizó", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
             }
             logger.info("Contrato actualizado correctamente");
-            return new ResponseEntity<>(new Message(contracts, "El status del contrato fue cambiado exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
+                    return new ResponseEntity<>(new Message(contracts, "El status del contrato fue cambiado exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
+    // Método para verificar si un cliente puede tener un nuevo contrato
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> canClientHaveNewContract(Long clientId) {
+        if (clientId == null || clientId <= 0) {
+            return new ResponseEntity<>(new Message("ID de cliente inválido", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
+        
+        int activeContractsCount = contractsRepository.countActiveContractsByClient(clientId);
+        boolean canHaveContract = activeContractsCount == 0;
+        
+        String message = canHaveContract ? 
+            "El cliente puede tener un nuevo contrato" : 
+            "El cliente ya tiene un contrato activo. No puede tener otro contrato asignado.";
+        
+        return new ResponseEntity<>(new Message(
+            Map.of(
+                "clientId", clientId,
+                "canHaveContract", canHaveContract,
+                "activeContractsCount", activeContractsCount,
+                "message", message
+            ), 
+            message, 
+            canHaveContract ? TypesResponse.SUCCESS : TypesResponse.WARNING
+        ), HttpStatus.OK);
+    }
 
         // Eliminar Contratos
         @Transactional(rollbackFor = {SQLException.class})
@@ -411,13 +378,13 @@ public class ContractsService {
         }
 
 
-        //Busqueda de Contrrato por nombre (PENDIENTE DE REVISION)
+        //Busqueda de Contrato por nombre
         @Transactional(readOnly = true)
         public ResponseEntity<Message> findByName (String name){
             if (name == null || name.isEmpty()) {
                 return new ResponseEntity<>(new Message("El nombre no debe ser nulo", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
             }
-            Optional<Contracts> contractsOptional = contractsRepository.findByName(name);
+            Optional<Contracts> contractsOptional = contractsRepository.findByNameWithRelations(name);
             if (!contractsOptional.isPresent()) {
                 return new ResponseEntity<>(new Message("Contrato no encontrado", TypesResponse.WARNING), HttpStatus.NOT_FOUND);
             }
@@ -426,10 +393,10 @@ public class ContractsService {
         }
 
 
-    //Busqueda de Cliente por ID
+    //Busqueda de Contrato por ID
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findById (Long id){
-        Optional<Contracts> contractsOptional = contractsRepository.findById(id);
+        Optional<Contracts> contractsOptional = contractsRepository.findByIdWithRelations(id);
         if (!contractsOptional.isPresent()) {
             return new ResponseEntity<>(new Message("Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
         }
@@ -437,141 +404,55 @@ public class ContractsService {
         return new ResponseEntity<>(new Message(contractsOptional.get(), "Contrato encontrado", TypesResponse.SUCCESS), HttpStatus.OK);
     }
 
-    // Buscar contrato por ID con validación de abogado
-    @Transactional(readOnly = true)
-    public ResponseEntity<Message> findByIdWithAbogadoValidation(Long id, Long abogadoId) {
-        Optional<Contracts> contractsOptional = contractsRepository.findById(id);
-        if (!contractsOptional.isPresent()) {
-            return new ResponseEntity<>(new Message("Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
-        }
-        
-        Contracts contract = contractsOptional.get();
-        
-        // Validar que el abogado autenticado sea el asignado al contrato
-        if (contract.getAbogado_id() == null || !contract.getAbogado_id().getId().equals(abogadoId)) {
-            return new ResponseEntity<>(new Message("No tienes permisos para acceder a este contrato", TypesResponse.ERROR), HttpStatus.FORBIDDEN);
-        }
-        
-        logger.info("Contrato encontrado y validado para el abogado ID: {}", abogadoId);
-        return new ResponseEntity<>(new Message(contract, "Contrato encontrado", TypesResponse.SUCCESS), HttpStatus.OK);
-    }
+
 
     //Busqueda de contratos activos
     @Transactional(readOnly = true)
     public ResponseEntity<Message> findAllByStatusIsTrue () {
-        List<Object[]> contractsData = contractsRepository.findAllContractsByStatusWithBasicInfo(true);
-        if (contractsData.isEmpty()) {
-            return new ResponseEntity<>(new Message(contractsData, "No hay contratos activos", TypesResponse.WARNING), HttpStatus.OK);
+        try {
+            logger.info("Iniciando búsqueda de contratos activos");
+            List<Contracts> contracts = contractsRepository.findAllByStatusIsTrue();
+            logger.info("Contratos activos encontrados: {}", contracts.size());
+            
+            if (contracts.isEmpty()) {
+                logger.info("No se encontraron contratos activos");
+                return new ResponseEntity<>(new Message(contracts, "No hay contratos activos", TypesResponse.WARNING), HttpStatus.OK);
+            }
+            
+            logger.info("Búsqueda de contratos activos completada exitosamente");
+            return new ResponseEntity<>(new Message(contracts, "Contratos activos encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Error en findAllByStatusIsTrue", e);
+            return new ResponseEntity<>(new Message("Error interno del servidor al buscar contratos activos", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        
-        // Convertir Object[] a Map para evitar referencias circulares
-        List<java.util.Map<String, Object>> contracts = contractsData.stream()
-            .map(row -> {
-                java.util.Map<String, Object> contract = new java.util.HashMap<>();
-                contract.put("id", row[0]);
-                contract.put("name", row[1]);
-                contract.put("description", row[2]);
-                contract.put("due_date", row[3]);
-                contract.put("status", row[4]);
-                contract.put("client_id", java.util.Map.of("id", row[5], "name", row[6]));
-                contract.put("category_id", java.util.Map.of("id", row[7], "name", row[8]));
-                contract.put("abogado_id", java.util.Map.of("id", row[9], "name", row[10], "lastName", row[11]));
-                return contract;
-            })
-            .collect(java.util.stream.Collectors.toList());
-        
-        logger.info("Busqueda de contratos activos realizada correctamente");
-        return new ResponseEntity<>(new Message(contracts, "Contratos activos encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
     }
 
-        //Scheduled para revisar cuantas contratos estan activas e inactivas
-        @Scheduled(cron = "0 0 0 * * ?") // Ejecutar diariamente a medianoche
-        public void reportContractStatus () {
-            long activeCount = contractsRepository.countByStatusIsTrue();
-            long inactiveCount = contractsRepository.countByStatusIsFalse();
-            logger.info("Reporte de estado de contratos a las {}: Contratos activos: {}, Contratos inactivos: {}", LocalDateTime.now(), activeCount, inactiveCount);
+    //Busqueda de contratos inactivos
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> findAllByStatusIsFalse () {
+        try {
+            logger.info("Iniciando búsqueda de contratos inactivos");
+            List<Contracts> contracts = contractsRepository.findAllByStatusIsFalse();
+            logger.info("Contratos inactivos encontrados: {}", contracts.size());
+            
+            if (contracts.isEmpty()) {
+                logger.info("No se encontraron contratos inactivos");
+                return new ResponseEntity<>(new Message(contracts, "No hay contratos inactivos", TypesResponse.WARNING), HttpStatus.OK);
+            }
+            
+            logger.info("Búsqueda de contratos inactivos completada exitosamente");
+            return new ResponseEntity<>(new Message(contracts, "Contratos inactivos encontrados", TypesResponse.SUCCESS), HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Error en findAllByStatusIsFalse", e);
+            return new ResponseEntity<>(new Message("Error interno del servidor al buscar contratos inactivos", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
 
-        // Aceptar contrato
-        @Transactional(rollbackFor = {SQLException.class})
-        public ResponseEntity<Message> acceptContract(Long contractId, Long abogadoId) {
-            Optional<Contracts> contractsOptional = contractsRepository.findById(contractId);
-            if (!contractsOptional.isPresent()) {
-                return new ResponseEntity<>(new Message("Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
-            }
-            
-            Contracts contract = contractsOptional.get();
-            
-            // Validar que el abogado autenticado sea el asignado al contrato
-            if (contract.getAbogado_id() == null || !contract.getAbogado_id().getId().equals(abogadoId)) {
-                return new ResponseEntity<>(new Message("No tienes permisos para aceptar este contrato", TypesResponse.ERROR), HttpStatus.FORBIDDEN);
-            }
-            
-            // Validar que el contrato esté pendiente
-            if (contract.getApprovalStatus() != null && contract.getApprovalStatus() != Contracts.ApprovalStatus.PENDIENTE) {
-                return new ResponseEntity<>(new Message("El contrato ya no está pendiente de aprobación", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
-            }
-            
-            // Si no tiene approvalStatus, establecerlo como PENDIENTE primero
-            if (contract.getApprovalStatus() == null) {
-                contract.setApprovalStatus(Contracts.ApprovalStatus.PENDIENTE);
-            }
-            
-            // Cambiar estado a ACEPTADO
-            contract.setApprovalStatus(Contracts.ApprovalStatus.ACEPTADO);
-            contract.setApprovedAt(LocalDateTime.now());
-            
-            contract = contractsRepository.saveAndFlush(contract);
-            if (contract == null) {
-                return new ResponseEntity<>(new Message("El contrato no se pudo aceptar", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
-            }
-            
-            logger.info("Contrato {} aceptado por el abogado {}", contractId, abogadoId);
-            return new ResponseEntity<>(new Message(contract, "Contrato aceptado exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
-        }
 
-        // Rechazar contrato
-        @Transactional(rollbackFor = {SQLException.class})
-        public ResponseEntity<Message> rejectContract(Long contractId, Long abogadoId, String rejectionReason) {
-            Optional<Contracts> contractsOptional = contractsRepository.findById(contractId);
-            if (!contractsOptional.isPresent()) {
-                return new ResponseEntity<>(new Message("Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
-            }
-            
-            Contracts contract = contractsOptional.get();
-            
-            // Validar que el abogado autenticado sea el asignado al contrato
-            if (contract.getAbogado_id() == null || !contract.getAbogado_id().getId().equals(abogadoId)) {
-                return new ResponseEntity<>(new Message("No tienes permisos para rechazar este contrato", TypesResponse.ERROR), HttpStatus.FORBIDDEN);
-            }
-            
-            // Validar que el contrato esté pendiente
-            if (contract.getApprovalStatus() != null && contract.getApprovalStatus() != Contracts.ApprovalStatus.PENDIENTE) {
-                return new ResponseEntity<>(new Message("El contrato ya no está pendiente de aprobación", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
-            }
-            
-            // Si no tiene approvalStatus, establecerlo como PENDIENTE primero
-            if (contract.getApprovalStatus() == null) {
-                contract.setApprovalStatus(Contracts.ApprovalStatus.PENDIENTE);
-            }
-            
-            // Validar que se proporcione un motivo de rechazo
-            if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
-                return new ResponseEntity<>(new Message("Debe proporcionar un motivo para rechazar el contrato", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
-            }
-            
-            // Cambiar estado a RECHAZADO
-            contract.setApprovalStatus(Contracts.ApprovalStatus.RECHAZADO);
-            contract.setRejectionReason(rejectionReason.trim());
-            
-            contract = contractsRepository.saveAndFlush(contract);
-            if (contract == null) {
-                return new ResponseEntity<>(new Message("El contrato no se pudo rechazar", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
-            }
-            
-            logger.info("Contrato {} rechazado por el abogado {} con motivo: {}", contractId, abogadoId, rejectionReason);
-            return new ResponseEntity<>(new Message(contract, "Contrato rechazado exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
-        }
+
+
 
     // Generar PDF del contrato
     public ResponseEntity<ByteArrayResource> generateContractPDF(Long contractId) {
@@ -613,14 +494,8 @@ public class ContractsService {
                 contract.getDue_date().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : 
                 "No especificada")));
             
-            contractInfo.addCell(new PdfPCell(new Paragraph("Estado de Aprobación:")));
-            contractInfo.addCell(new PdfPCell(new Paragraph(contract.getApprovalStatus() != null ? 
-                contract.getApprovalStatus().toString() : "PENDIENTE")));
-            
-            if (contract.getApprovalStatus() == Contracts.ApprovalStatus.ACEPTADO && contract.getApprovedAt() != null) {
-                contractInfo.addCell(new PdfPCell(new Paragraph("Fecha de Aprobación:")));
-                contractInfo.addCell(new PdfPCell(new Paragraph(contract.getApprovedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))));
-            }
+            contractInfo.addCell(new PdfPCell(new Paragraph("Estado:")));
+            contractInfo.addCell(new PdfPCell(new Paragraph(contract.isStatus() ? "ACTIVO" : "INACTIVO")));
             
             document.add(contractInfo);
             

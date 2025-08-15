@@ -135,34 +135,37 @@ const ProfileAbo = () => {
       return;
     }
 
-          try {
-        const token = localStorage.getItem("accessToken");
-        const response = await fetch("http://localhost:8080/users/me/password/update", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            newPassword: passwordData.newPassword,
-            confirmPassword: passwordData.confirmPassword
-          })
-        });
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("http://localhost:8080/users/me/password/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          newPassword: passwordData.newPassword,
+          confirmPassword: passwordData.confirmPassword
+        })
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.text || "Error al cambiar la contraseña");
       }
 
-      // Éxito
+      // Éxito - Cerrar sesión automáticamente
       Swal.fire({
         icon: "success",
         title: "¡Contraseña actualizada!",
-        text: "Tu contraseña ha sido cambiada exitosamente.",
-        timer: 2000,
-        showConfirmButton: false
+        text: "Tu contraseña ha sido cambiada exitosamente. Por seguridad, tu sesión será cerrada.",
+        confirmButtonText: "Entendido"
       }).then(() => {
-        closePasswordModal();
+        // Limpiar localStorage
+        localStorage.clear();
+        
+        // Redirigir al login
+        window.location.href = "/";
       });
 
     } catch (error) {
