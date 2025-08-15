@@ -40,8 +40,8 @@ const Empresas = () => {
                 setEmpresas([]);
             }
         } catch (error) {
-            console.error("Error al obtener empresas:", error);
-            setError("No se pudieron cargar las empresas");
+            // Error al obtener empresas
+            setEmpresas([]);
         } finally {
             setLoading(false);
         }

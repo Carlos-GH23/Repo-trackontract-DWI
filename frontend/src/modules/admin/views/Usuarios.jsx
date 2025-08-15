@@ -50,7 +50,7 @@ export default function Usuarios() {
 
       setUsuarios(usuariosFiltrados);
     } catch (error) {
-      console.error("Error al obtener usuarios:", error);
+      // Error al obtener usuarios
       setUsuarios([]);
     } finally {
       setLoading(false);
@@ -112,12 +112,7 @@ export default function Usuarios() {
         setUsuarios(prevUsuarios => prevUsuarios.filter(u => u.id !== id));
       });
     } catch (error) {
-      console.error("Error eliminando usuario:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Ocurrió un error inesperado al eliminar el usuario",
-      });
+      Swal.fire("Error", "No se pudo eliminar el usuario", "error");
     }
   }
 

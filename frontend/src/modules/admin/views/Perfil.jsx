@@ -39,7 +39,7 @@ const ProfileAdmin = () => {
           setEmailOriginal(data.email); // Guardamos el email original para comparar luego
         })
         .catch(err => {
-          console.error(err);
+          // Error al obtener perfil
           Swal.fire({
             icon: "error",
             title: "Error",

@@ -179,6 +179,15 @@ public class User {
     public LocalDateTime getLocked_until() { return locked_until; }
     public void setLocked_until(LocalDateTime locked_until) { this.locked_until = locked_until; }
 
+    public Roles getRol_id() {
+        return rol_id;
+    }
+
+    public void setRol_id(Roles rol_id) {
+        this.rol_id = rol_id;
+    }
+
+    // Getters y setters para las relaciones
     public List<Token> getTokens() {
         return tokens;
     }
@@ -211,21 +220,17 @@ public class User {
         this.user_contracts = user_contracts;
     }
 
-    public Roles getRol_id() {
-        return rol_id;
-    }
-
-    public void setRol_id(Roles rol_id) {
-        this.rol_id = rol_id;
-    }
-
+    // Relaciones JPA
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Token> tokens;
 
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Audit_Logs> audit_logs;
 
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Password_Resets> password_resets;
 
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL)
@@ -233,6 +238,6 @@ public class User {
     private List<User_Contracts> user_contracts;
 
     @ManyToOne
-    @JsonIgnore
+    @JoinColumn(name = "rol_id")
     private Roles rol_id;
 }

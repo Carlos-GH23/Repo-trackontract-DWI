@@ -30,7 +30,7 @@ export const logout = async () => {
             });
         }
     } catch (error) {
-        console.error('Error en logout:', error);
+        // Error en logout
     } finally {
         // Limpiar localStorage independientemente del resultado
         localStorage.removeItem('token');

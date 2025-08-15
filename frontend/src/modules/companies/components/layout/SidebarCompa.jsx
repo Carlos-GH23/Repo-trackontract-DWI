@@ -22,7 +22,7 @@ const SidebarCompa = ({ isCollapsed, setIsCollapsed }) => {
                 }
             });
         } catch (error) {
-            console.error("Error al cerrar sesión:", error);
+            // Error al cerrar sesión
         }
 
         localStorage.removeItem("access_token");

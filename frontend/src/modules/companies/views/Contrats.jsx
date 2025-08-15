@@ -40,9 +40,9 @@ const Contrats = () => {
             const data = await response.json();
             
             if (data.result && Array.isArray(data.result)) {
-                // Filtrar solo contratos aceptados
+                // Filtrar solo contratos aceptados (status = true)
                 const contratosAceptados = data.result.filter(contrato => {
-                    return contrato.approvalStatus === 'ACEPTADO';
+                    return contrato.status === true;
                 });
                 
                 setContratos(contratosAceptados);
@@ -50,7 +50,7 @@ const Contrats = () => {
                 setContratos([]);
             }
         } catch (error) {
-            console.error("Error al obtener contratos:", error);
+            // Error al obtener contratos
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -120,7 +120,7 @@ const Contrats = () => {
             });
 
         } catch (error) {
-            console.error("Error al generar PDF:", error);
+            // Error al generar PDF
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -137,8 +137,8 @@ const Contrats = () => {
                 <div class="text-left space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="font-semibold text-gray-700">Estado de Aprobación:</span>
-                        <span class="px-2 py-1 text-xs rounded-full font-medium bg-blue-100 text-blue-800">
-                            Aceptado
+                        <span class="px-2 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800">
+                            ✅ Aceptado y Notificado
                         </span>
                     </div>
                     <div>
@@ -152,16 +152,16 @@ const Contrats = () => {
                     </div>
                     <div>
                         <span class="font-semibold text-gray-700">Fecha de Aprobación:</span>
-                        <p class="text-gray-600 mt-1">${contrato.approvedAt ? new Date(contrato.approvedAt).toLocaleDateString() : "N/A"}</p>
+                        <p class="text-gray-600 mt-1">${contrato.updated_at ? new Date(contrato.updated_at).toLocaleDateString() : "N/A"}</p>
                     </div>
                     <div>
                         <span class="font-semibold text-gray-700">Fecha de Vencimiento:</span>
                         <p class="text-gray-600 mt-1">${contrato.due_date ? new Date(contrato.due_date).toLocaleDateString() : "N/A"}</p>
                     </div>
-                    <div>
-                        <span class="font-semibold text-gray-700">Descripción:</span>
-                        <p class="text-gray-600 mt-1">${contrato.description || "Sin descripción"}</p>
-                    </div>
+                                         <div>
+                         <span class="font-semibold text-gray-700">Descripción:</span>
+                         <p class="text-gray-600 mt-1">${contrato.description || "Sin descripción"}</p>
+                     </div>
                 </div>
             `,
             icon: "info",
@@ -194,7 +194,10 @@ const Contrats = () => {
     return (
         <div className="min-h-screen bg-white p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Mis Contratos Aceptados</h1>
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Mis Contratos Aceptados</h1>
+                    <p className="text-gray-600 mt-1">Contratos que han sido revisados y aprobados por nuestro equipo legal</p>
+                </div>
                 <input 
                     type="text" 
                     placeholder="Buscar contrato..." 
@@ -206,7 +209,18 @@ const Contrats = () => {
 
             {contratosFiltrados.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-500 text-lg">No tienes contratos aceptados actualmente</p>
+                    <div className="max-w-md mx-auto">
+                        <div className="text-gray-400 mb-4">
+                            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-700 mb-2">No tienes contratos aceptados</h3>
+                        <p className="text-gray-500">
+                            Cuando un abogado acepte y apruebe tu contrato, aparecerá aquí. 
+                            Recibirás una notificación por email cuando esto suceda.
+                        </p>
+                    </div>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-6">
@@ -219,12 +233,12 @@ const Contrats = () => {
                                 <div className="flex justify-between items-start mb-4">
                                     <h2 className="text-xl font-semibold text-gray-800">{contrato.name}</h2>
                                     <div className="flex flex-col items-end gap-2">
-                                        <span className="px-2 py-1 text-xs rounded-full font-medium bg-blue-100 text-blue-800">
-                                            Aceptado
+                                        <span className="px-2 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800">
+                                            ✅ Aceptado y Notificado
                                         </span>
-                                        {contrato.approvedAt && (
+                                        {contrato.updated_at && (
                                             <span className="text-xs text-gray-500">
-                                                Aprobado: {new Date(contrato.approvedAt).toLocaleDateString()}
+                                                Aprobado: {new Date(contrato.updated_at).toLocaleDateString()}
                                             </span>
                                         )}
                                     </div>

@@ -41,8 +41,8 @@ export default function Categorias() {
       }
 
     } catch (error) {
-      console.error(error);
-      Swal.fire("Error", error.message, "error");
+      // Error al obtener categorías
+      setCategorias([]);
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ export default function Categorias() {
       Swal.fire("Eliminado", "La categoría ha sido eliminada.", "success");
       setCategorias((prev) => prev.filter((cat) => cat.id !== id));
     } catch (error) {
-      console.error(error);
+      // Error al eliminar categoría
       Swal.fire("Error", error.message, "error");
     }
   };

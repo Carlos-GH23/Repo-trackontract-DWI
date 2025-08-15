@@ -28,7 +28,6 @@ export default function EditarUsuario() {
           if (!res.ok) throw new Error("Usuario no encontrado");
           const data = await res.json();
           const usuario = data.result;
-          console.log("Usuario recibido:", usuario); // <--- Aquí
           setFormData({
             nombre: usuario.name || "",
             apellidos: usuario.last_name || usuario.lastName || "", // probamos varios nombres
@@ -142,12 +141,8 @@ export default function EditarUsuario() {
         navigate("/admin/abogados");
       });
     } catch (error) {
-      console.error(error);
-      Swal.fire({
-        icon: "error",
-        title: "Error inesperado",
-        text: "Error inesperado al actualizar usuario",
-      });
+        // Error al actualizar usuario
+        Swal.fire("Error", "No se pudo actualizar el usuario", "error");
     }
   };
 

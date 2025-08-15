@@ -2,6 +2,7 @@ package com.example.integradora_trackontract.modules.Roles.model;
 
 import com.example.integradora_trackontract.modules.User.model.User;
 import com.example.integradora_trackontract.modules.User_Contracts.model.User_Contracts;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,9 +23,11 @@ public class Roles {
     private String description;
 
     @OneToMany(mappedBy = "rol_id", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<User> users;
 
     @OneToMany(mappedBy = "role_id", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<User_Contracts> userContracts;
 
     // ✅ Este método convierte el nombre del rol en un GrantedAuthority

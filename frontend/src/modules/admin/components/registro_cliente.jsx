@@ -117,8 +117,8 @@ export default function RegistroCliente() {
             });
             volverAClientes();
         } catch (error) {
-            console.error(error);
-            Swal.fire("Error", error.message, "error");
+            // Error al crear cliente
+            Swal.fire("Error", "No se pudo crear el cliente", "error");
         }
     };
 

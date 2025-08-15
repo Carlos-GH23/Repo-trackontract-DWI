@@ -15,24 +15,20 @@ export default function CategoriasActivas() {
             });
 
             if (!response.ok) {
-                console.error("Error al cargar categorías activas");
+                // Error al cargar categorías activas
                 setCategorias([]);
                 return;
             }
 
             const data = await response.json();
-            console.log("Respuesta API categorías activas:", data);
-
-            if (Array.isArray(data)) {
-                setCategorias(data);
-            } else if (data.result && Array.isArray(data.result)) {
+            // Respuesta API categorías activas procesada
+            if (data.result && Array.isArray(data.result)) {
                 setCategorias(data.result);
             } else {
                 setCategorias([]);
-                console.warn("La estructura de datos no es la esperada");
             }
         } catch (error) {
-            console.error("Error en fetchCategoriasActivas:", error);
+            // Error al cargar categorías activas
             setCategorias([]);
         } finally {
             setLoading(false);

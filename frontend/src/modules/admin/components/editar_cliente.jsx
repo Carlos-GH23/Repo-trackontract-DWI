@@ -150,12 +150,8 @@ export default function EditarCliente() {
         navigate("/admin/clientes");
       });
     } catch (error) {
-      console.error(error);
-      Swal.fire({
-        icon: "error",
-        title: "Error inesperado",
-        text: "Error inesperado al actualizar cliente",
-      });
+        // Error al actualizar cliente
+        Swal.fire("Error", "No se pudo actualizar el cliente", "error");
     }
   };
 
