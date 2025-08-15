@@ -802,6 +802,10 @@ public class ContractsService {
                 contractId, contract.isStatus(), 
                 contract.getAbogado_id() != null ? contract.getAbogado_id().getId() : "null");
             
+            // NOTA: Este método ahora está obsoleto. Se debe usar el nuevo sistema de rechazos
+            // a través de ContractRejectionService.createRejection()
+            logger.warn("Método obsoleto rejectContract() llamado. Use ContractRejectionService.createRejection() en su lugar.");
+            
             // Por ahora, simplemente desactivamos el contrato
             // En el futuro se puede implementar la lógica completa de aprobaciones
             boolean oldStatus = contract.isStatus();
@@ -823,76 +827,10 @@ public class ContractsService {
             }
             
             logger.info("Contrato {} rechazado exitosamente por abogado {} con motivo: {}", contractId, abogadoId, rejectionReason);
-            return new ResponseEntity<>(new Message(savedContract, "Contrato rechazado exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
+            return new ResponseEntity<>(new Message(savedContract, "Contrato rechazado exitosamente (método obsoleto)", TypesResponse.SUCCESS), HttpStatus.OK);
             
         } catch (Exception e) {
             logger.error("Error rechazando contrato {}: {}", contractId, e.getMessage());
-            return new ResponseEntity<>(new Message(null, "Error interno del servidor", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    // Método para debuggear un contrato
-    @Transactional(readOnly = true)
-    public ResponseEntity<Message> debugContract(Long contractId) {
-        try {
-            logger.info("Debuggeando contrato {}", contractId);
-            
-            Optional<Contracts> contractOpt = contractsRepository.findById(contractId);
-            if (contractOpt.isEmpty()) {
-                return new ResponseEntity<>(new Message(null, "Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
-            }
-            
-            Contracts contract = contractOpt.get();
-            
-            Map<String, Object> debugInfo = Map.of(
-                "id", contract.getId(),
-                "name", contract.getName(),
-                "status", contract.isStatus(),
-                "created_at", contract.getCreated_at(),
-                "updated_at", contract.getUpdated_at(),
-                "abogado_id", contract.getAbogado_id() != null ? contract.getAbogado_id().getId() : "null",
-                "client_id", contract.getClient_id() != null ? contract.getClient_id().getId() : "null",
-                "category_id", contract.getCategory_id() != null ? contract.getCategory_id().getId() : "null"
-            );
-            
-            logger.info("Información de debug del contrato {}: {}", contractId, debugInfo);
-            return new ResponseEntity<>(new Message(debugInfo, "Información de debug del contrato", TypesResponse.SUCCESS), HttpStatus.OK);
-            
-        } catch (Exception e) {
-            logger.error("Error debuggeando contrato {}: {}", contractId, e.getMessage());
-            return new ResponseEntity<>(new Message(null, "Error interno del servidor", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    // Método para debuggear contratos de un abogado
-    @Transactional(readOnly = true)
-    public ResponseEntity<Message> debugAbogadoContracts(Long abogadoId) {
-        try {
-            logger.info("Debuggeando contratos del abogado {}", abogadoId);
-            
-            List<Contracts> contracts = contractsRepository.findAllByAbogado(abogadoId);
-            logger.info("Contratos encontrados para abogado {}: {}", abogadoId, contracts.size());
-            
-            List<Map<String, Object>> debugInfo = contracts.stream()
-                .map(contract -> {
-                    Map<String, Object> contractInfo = new java.util.HashMap<>();
-                    contractInfo.put("id", contract.getId());
-                    contractInfo.put("name", contract.getName());
-                    contractInfo.put("status", contract.isStatus());
-                    contractInfo.put("created_at", contract.getCreated_at());
-                    contractInfo.put("updated_at", contract.getUpdated_at());
-                    contractInfo.put("abogado_id", contract.getAbogado_id() != null ? contract.getAbogado_id().getId() : "null");
-                    contractInfo.put("client_id", contract.getClient_id() != null ? contract.getClient_id().getId() : "null");
-                    contractInfo.put("category_id", contract.getCategory_id() != null ? contract.getCategory_id().getId() : "null");
-                    return contractInfo;
-                })
-                .collect(java.util.stream.Collectors.toList());
-            
-            logger.info("Información de debug de contratos del abogado {}: {}", abogadoId, debugInfo);
-            return new ResponseEntity<>(new Message(debugInfo, "Información de debug de contratos del abogado", TypesResponse.SUCCESS), HttpStatus.OK);
-            
-        } catch (Exception e) {
-            logger.error("Error debuggeando contratos del abogado {}: {}", abogadoId, e.getMessage());
             return new ResponseEntity<>(new Message(null, "Error interno del servidor", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

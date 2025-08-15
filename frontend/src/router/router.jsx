@@ -27,6 +27,7 @@ import ProfileCompa from "../modules/companies/views/Profile"
 import Contrats from "../modules/companies/views/Contrats"
 import CategoriasInactivas from "../modules/admin/views/CategoriasInactivas";
 import CategoriasActivas from "../modules/admin/views/CategoriasActivas";
+import RechazosContratos from "../modules/admin/views/RechazosContratos";
 
 
 const AppRouter = () => {
@@ -43,6 +44,7 @@ const AppRouter = () => {
             <Route path="contratos" element={<Contratos />} />
             <Route path="contratos/add" element={<RegistroContrato />} />
             <Route path="contratos/edit/:id" element={<EditarContrato />} />
+            <Route path="contratos/rechazos" element={<RechazosContratos />} />
             <Route path="categorias" element={<Categorias />} />
             <Route path="categorias/add" element={<RegistroCategoria />} />
             <Route path="categorias/edit/:id" element={<EditarCategoria />} />
