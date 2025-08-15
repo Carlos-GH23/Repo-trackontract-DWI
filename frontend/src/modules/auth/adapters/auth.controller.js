@@ -8,7 +8,7 @@ export const login = async (email, password) => {
             throw new Error(response.text)
 
         const { token, user } = response.result;
-        
+
         // Guardar en localStorage para compatibilidad
         localStorage.setItem('token', token)
         localStorage.setItem('user', user.name)
@@ -18,7 +18,7 @@ export const login = async (email, password) => {
         return response
     } catch (e) {
         throw new Error(e.message)
-    } 
+    }
 }
 
 export const logout = async () => {
@@ -42,43 +42,29 @@ export const logout = async () => {
 
 export const sendPasswordRecoveryEmail = async (email) => {
     try {
-        const response = await handleRequest('post', '/auth/send-email', { email })
+        const response = await handleRequest('post', '/auth/password/forgot', { email });
 
         if (response.type !== 'SUCCESS' || response.status === 'ERROR')
-            throw new Error(response.text)
+            throw new Error(response.text);
 
-        return response
+        return response;
     } catch (e) {
-        throw new Error(e.message)
+        throw new Error(e.message);
     }
 }
 
 export const validateRecoveryToken = async (token) => {
+    return await handleRequest('post', '/auth/password/validate-recovery-token', { token });
+}
+
+export const resetPassword = async (token, newPassword) => {
     try {
-        const response = await handleRequest('post', '/auth/validate-recovery-token', { token })
-
+        const response = await handleRequest('post', '/auth/password/reset', { token, newPassword });
         if (response.type !== 'SUCCESS' || response.status === 'ERROR')
-            throw new Error(response.text)
-
-        return response
+            throw new Error(response.text);
+        return response;
     } catch (e) {
-        throw new Error(e.message)
+        throw new Error(e.message);
     }
 }
 
-export const resetPassword = async (email, nuevaPassword, confirmarPassword) => {
-    try {
-        const response = await handleRequest('post', '/auth/restaurar-password', {
-            email,
-            nuevaPassword,
-            confirmarPassword
-        })
-
-        if (response.type !== 'SUCCESS' || response.status === 'ERROR')
-            throw new Error(response.text)
-
-        return response
-    } catch (e) {
-        throw new Error(e.message)
-    }
-}
