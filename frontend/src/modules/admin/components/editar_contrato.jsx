@@ -66,7 +66,7 @@ export default function EditarContrato() {
         })
       }
     } catch (err) {
-      console.error("Error al obtener contrato:", err)
+      // Error al obtener contrato
       setError("Error al cargar contrato: " + err.message)
     }
   }
@@ -99,7 +99,7 @@ export default function EditarContrato() {
         setClientes([])
       }
     } catch (err) {
-      console.error("Error al obtener clientes:", err)
+      // Error al obtener clientes
       setError("Error al cargar clientes: " + err.message)
     }
   }
@@ -132,7 +132,7 @@ export default function EditarContrato() {
         setCategorias([])
       }
     } catch (err) {
-      console.error("Error al obtener categorías:", err)
+      // Error al obtener categorías
       setError("Error al cargar categorías: " + err.message)
     }
   }
@@ -165,7 +165,7 @@ export default function EditarContrato() {
         setAbogados([])
       }
     } catch (err) {
-      console.error("Error al obtener abogados:", err)
+      // Error al obtener abogados
       setError("Error al cargar abogados: " + err.message)
     }
   }
@@ -228,9 +228,7 @@ export default function EditarContrato() {
         }
       }
 
-      // Debug: Ver qué datos se envían
-      console.log("Datos del formulario:", formData)
-      console.log("Datos a enviar al backend:", contratoData)
+      // Datos preparados para envío
 
       const response = await fetch("http://localhost:8080/contracts/update", {
         method: "PUT",
@@ -241,11 +239,11 @@ export default function EditarContrato() {
         body: JSON.stringify(contratoData)
       })
 
-      console.log("Respuesta del servidor:", response.status, response.statusText)
+      // Respuesta del servidor procesada
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.log("Error response body:", errorData)
+        // Error del servidor procesado
         
         // Extraer el mensaje de error del backend
         let errorMessage = "Error al actualizar contrato"
@@ -272,7 +270,7 @@ export default function EditarContrato() {
       })
       
     } catch (err) {
-      console.error("Error al actualizar contrato:", err)
+      // Error capturado
       setError(err.message)
     } finally {
       setLoading(false)

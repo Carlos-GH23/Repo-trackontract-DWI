@@ -50,10 +50,7 @@ public class ContractsController {
         return contractsService.delete(id);
     }
 
-    @GetMapping("/all/status/false")
-    public List<Contracts> getAllClientsByInactiveStatus() {
-        return contractsService.findAllByStatusIsFalse(true);
-    }
+
 
     @GetMapping("/name/{name}")
     public ResponseEntity<Message> getContractsByName(@PathVariable String name) {
@@ -65,14 +62,16 @@ public class ContractsController {
         return contractsService.findById(id);
     }
 
-    @GetMapping("/abogado/{abogadoId}/id/{id}")
-    public ResponseEntity<Message> getContractsByIdWithAbogadoValidation(@PathVariable Long abogadoId, @PathVariable Long id) {
-        return contractsService.findByIdWithAbogadoValidation(id, abogadoId);
-    }
+
 
     @GetMapping("/all/status/true")
     public ResponseEntity<Message> getAllContractsByActiveStatus() {
         return contractsService.findAllByStatusIsTrue();
+    }
+
+    @GetMapping("/all/status/false")
+    public ResponseEntity<Message> getAllContractsByInactiveStatus() {
+        return contractsService.findAllByStatusIsFalse();
     }
 
     @GetMapping("/by-abogado/{abogadoId}")
@@ -85,15 +84,7 @@ public class ContractsController {
         return contractsService.getEmpresasByAbogado(abogadoId);
     }
 
-    @PostMapping("/{contractId}/accept")
-    public ResponseEntity<Message> acceptContract(@PathVariable Long contractId, @RequestParam Long abogadoId) {
-        return contractsService.acceptContract(contractId, abogadoId);
-    }
 
-    @PostMapping("/{contractId}/reject")
-    public ResponseEntity<Message> rejectContract(@PathVariable Long contractId, @RequestParam Long abogadoId, @RequestBody String rejectionReason) {
-        return contractsService.rejectContract(contractId, abogadoId, rejectionReason);
-    }
 
     @GetMapping("/by-client/{clientId}")
     public ResponseEntity<Message> getContractsByClient(@PathVariable Long clientId) {
@@ -108,6 +99,11 @@ public class ContractsController {
     @GetMapping("/{contractId}/pdf")
     public ResponseEntity<ByteArrayResource> generateContractPDF(@PathVariable Long contractId) {
         return contractsService.generateContractPDF(contractId);
+    }
+
+    @GetMapping("/client/{clientId}/can-have-contract")
+    public ResponseEntity<Message> canClientHaveNewContract(@PathVariable Long clientId) {
+        return contractsService.canClientHaveNewContract(clientId);
     }
 
 }

@@ -212,15 +212,18 @@ const ProfileCompa = () => {
                 throw new Error(errorData.text || "Error al cambiar la contraseña");
             }
 
-            // Éxito
+            // Éxito - Cerrar sesión automáticamente
             Swal.fire({
                 icon: "success",
                 title: "¡Contraseña actualizada!",
-                text: "Tu contraseña ha sido cambiada exitosamente.",
-                timer: 2000,
-                showConfirmButton: false
+                text: "Tu contraseña ha sido cambiada exitosamente. Por seguridad, tu sesión será cerrada.",
+                confirmButtonText: "Entendido"
             }).then(() => {
-                closePasswordModal();
+                // Limpiar localStorage
+                localStorage.clear();
+                
+                // Redirigir al login
+                window.location.href = "/";
             });
 
         } catch (error) {

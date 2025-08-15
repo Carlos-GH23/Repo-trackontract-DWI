@@ -6,6 +6,7 @@ import com.example.integradora_trackontract.modules.Password_Resets.model.Passwo
 import com.example.integradora_trackontract.modules.Roles.model.Roles;
 import com.example.integradora_trackontract.modules.User_Contracts.model.User_Contracts;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -228,6 +229,7 @@ public class User {
     private List<Password_Resets> password_resets;
 
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<User_Contracts> user_contracts;
 
     @ManyToOne

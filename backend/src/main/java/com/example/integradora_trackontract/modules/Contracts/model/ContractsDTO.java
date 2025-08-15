@@ -26,14 +26,7 @@ public class ContractsDTO {
     @NotNull(groups = {Register.class, ChangeStatus.class})
     private Boolean status;
 
-    private String approvalStatus;
 
-    private String approvedAt;
-
-    private String rejectionReason;
-    
-    // Nuevo campo para el estado del contrato
-    private String contractStatus;
 
     @NotNull(groups = {Register.class, Modify.class}, message = "El cliente no puede ser nulo")
     private ClientsDTO clientsDTO;
@@ -132,37 +125,7 @@ public class ContractsDTO {
         this.abogadoDTO = abogadoDTO;
     }
 
-    public String getApprovalStatus() {
-        return approvalStatus;
-    }
 
-    public void setApprovalStatus(String approvalStatus) {
-        this.approvalStatus = approvalStatus;
-    }
-
-    public String getApprovedAt() {
-        return approvedAt;
-    }
-
-    public void setApprovedAt(String approvedAt) {
-        this.approvedAt = approvedAt;
-    }
-
-    public String getRejectionReason() {
-        return rejectionReason;
-    }
-
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
-    }
-    
-    public String getContractStatus() {
-        return contractStatus;
-    }
-
-    public void setContractStatus(String contractStatus) {
-        this.contractStatus = contractStatus;
-    }
 
     public interface Register {}
     public interface  Modify {}
