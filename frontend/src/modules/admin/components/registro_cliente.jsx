@@ -58,15 +58,20 @@ export default function RegistroCliente() {
                 let errorMessage = "Error desconocido";
 
                 if (contentType && contentType.includes("application/json")) {
-                    const errorJson = await responseSave.json();
-                    if (errorJson.text) {
-                        errorMessage = errorJson.text;
-                    } else {
-                        errorMessage = Object.values(errorJson).join("\n");
+                    try {
+                        const errorJson = await responseSave.json();
+                        if (errorJson.text) {
+                            errorMessage = errorJson.text;
+                        } else if (errorJson.result) {
+                            errorMessage = errorJson.result;
+                        } else {
+                            errorMessage = Object.values(errorJson).join("\n");
+                        }
+                    } catch (parseError) {
+                        errorMessage = "Error del servidor: " + responseSave.status + " " + responseSave.statusText;
                     }
                 } else {
-                    const errorText = await responseSave.text();
-                    errorMessage = errorText || errorMessage;
+                    errorMessage = "Error del servidor: " + responseSave.status + " " + responseSave.statusText;
                 }
 
                 throw new Error(errorMessage);
@@ -118,7 +123,7 @@ export default function RegistroCliente() {
             volverAClientes();
         } catch (error) {
             // Error al crear cliente
-            Swal.fire("Error", "No se pudo crear el cliente", "error");
+            Swal.fire("Error", `No se pudo crear el cliente: ${error.message}`, "error");
         }
     };
 

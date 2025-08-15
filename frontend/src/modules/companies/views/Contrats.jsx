@@ -137,8 +137,8 @@ const Contrats = () => {
                 <div class="text-left space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="font-semibold text-gray-700">Estado de Aprobación:</span>
-                        <span class="px-2 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800">
-                            ✅ Aceptado y Notificado
+                        <span class="px-2 py-1 text-xs rounded-full font-medium ${contrato.status ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                            ${contrato.status ? '✅ Aceptado y Notificado' : '⏳ Pendiente de Aprobación'}
                         </span>
                     </div>
                     <div>
@@ -195,8 +195,8 @@ const Contrats = () => {
         <div className="min-h-screen bg-white p-6">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Mis Contratos Aceptados</h1>
-                    <p className="text-gray-600 mt-1">Contratos que han sido revisados y aprobados por nuestro equipo legal</p>
+                    <h1 className="text-2xl font-bold text-gray-800">Mis Contratos</h1>
+                    <p className="text-gray-600 mt-1">Contratos pendientes y aceptados por nuestro equipo legal</p>
                 </div>
                 <input 
                     type="text" 
@@ -215,10 +215,10 @@ const Contrats = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-700 mb-2">No tienes contratos aceptados</h3>
+                        <h3 className="text-lg font-semibold text-gray-700 mb-2">No tienes contratos</h3>
                         <p className="text-gray-500">
-                            Cuando un abogado acepte y apruebe tu contrato, aparecerá aquí. 
-                            Recibirás una notificación por email cuando esto suceda.
+                            Cuando se cree un contrato para tu empresa, aparecerá aquí. 
+                            Los contratos estarán en estado "Pendiente" hasta que un abogado los revise y apruebe.
                         </p>
                     </div>
                 </div>

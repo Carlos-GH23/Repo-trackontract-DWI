@@ -220,8 +220,9 @@ public class ContractsService {
         logger.info("Categoría encontrada - ID: {}, Nombre: {}", categories.getId(), categories.getName());
         logger.info("Abogado encontrado - ID: {}, Nombre: {}", abogado.getId(), abogado.getName());
         
-        Contracts contracts = new Contracts(dto.getName(), dto.getDescription(), dto.getDue_date(), true, clients, categories);
-        contracts.setStatus(true);
+        // Crear contrato en estado PENDIENTE (false) hasta que el abogado lo apruebe
+        Contracts contracts = new Contracts(dto.getName(), dto.getDescription(), dto.getDue_date(), false, clients, categories);
+        contracts.setStatus(false); // ❌ PENDIENTE: Requiere aprobación del abogado
         contracts.setAbogado_id(abogado);
         
         logger.info("Contrato creado en memoria - Cliente ID: {}, Abogado ID: {}", 
@@ -229,14 +230,17 @@ public class ContractsService {
         
         contracts = contractsRepository.saveAndFlush(contracts);
         
-        logger.info("Contrato guardado en BD - ID: {}, Cliente ID: {}, Abogado ID: {}", 
-            contracts.getId(), contracts.getClient_id().getId(), contracts.getAbogado_id().getId());
+        logger.info("Contrato guardado en BD - ID: {}, Cliente ID: {}, Abogado ID: {}, Status: {}", 
+            contracts.getId(), contracts.getClient_id().getId(), contracts.getAbogado_id().getId(), contracts.isStatus());
         
         if (contracts == null) {
             return new ResponseEntity<>(new Message("El contrato no se registró", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
         }
-        logger.info("El registro ha sido realizado correctamente");
-        return new ResponseEntity<>(new Message(contracts, "El contrato se registró correctamente", TypesResponse.SUCCESS), HttpStatus.CREATED);
+        
+        logger.info("El registro ha sido realizado correctamente - Contrato en estado PENDIENTE");
+        logger.info("IMPORTANTE: El contrato requiere aprobación del abogado antes de activarse");
+        
+        return new ResponseEntity<>(new Message(contracts, "El contrato se registró correctamente en estado PENDIENTE. Requiere aprobación del abogado.", TypesResponse.SUCCESS), HttpStatus.CREATED);
     }
 
         //Actualizar Contratos

@@ -50,9 +50,9 @@ public class SecurityConfig {
                                 .requestMatchers("/users/update")
                                 .authenticated()
 
-                                // Solo ADMIN puede acceder a gestión de usuarios
+                                // Solo ADMIN y ABOGADO pueden acceder a gestión de usuarios
                                 .requestMatchers("/users/**")
-                                .hasRole("ADMIN")
+                                .hasAnyRole("ADMIN", "ABOGADO")
 
                                 // Permitir que los clientes accedan a su propio perfil (ANTES de la regla general)
                                 .requestMatchers("/clients/me", "/clients/me/**")
