@@ -37,8 +37,6 @@ public class UserController {
 
     @PostMapping("/save")
     public ResponseEntity<Message> saveUsers(@Validated(UserDTO.Register.class) @RequestBody UserDTO dto) {
-        System.out.println("DEBUG - Llegó al UserController.saveUsers");
-        System.out.println("DEBUG - Usuario a crear: " + dto.getEmail());
         return userService.save(dto);
     }
 
