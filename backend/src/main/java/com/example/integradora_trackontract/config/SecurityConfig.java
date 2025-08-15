@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req.requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/contracts/public/**").permitAll()
 
                                 // Permitir que usuarios autenticados accedan a su propio perfil y funcionalidades básicas
                                 .requestMatchers("/users/me", "/users/me/**")

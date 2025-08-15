@@ -26,7 +26,7 @@ const SidebarAdmin = ({ isCollapsed, setIsCollapsed }) => {
                 headers: { "Authorization": `Bearer ${accessToken}` }
             });
         } catch (error) {
-            console.error("Error al cerrar sesión:", error);
+            // Error al cerrar sesión
         }
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");

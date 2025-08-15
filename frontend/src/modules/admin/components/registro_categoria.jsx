@@ -97,8 +97,8 @@ export default function RegistroCategoria() {
       Swal.fire("¡Creado!", "La categoría fue creada exitosamente.", "success");
       volverACategorias();
     } catch (error) {
-      console.error(error);
-      Swal.fire("Error", error.message, "error");
+      // Error al crear categoría
+      Swal.fire("Error", "No se pudo crear la categoría", "error");
     }
   };
 

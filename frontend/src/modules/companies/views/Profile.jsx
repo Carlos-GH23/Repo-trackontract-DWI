@@ -75,9 +75,14 @@ const ProfileCompa = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
+<<<<<<< HEAD
+            
+            
+=======
 
             console.log("Respuesta del servidor:", response.status, response.statusText);
 
+>>>>>>> 09f070b5832f0e7c1054cbe801528654b8131fd6
             if (!response.ok) {
                 if (response.status === 403) {
                     throw new Error("Acceso denegado. Verifica que tengas permisos para acceder a este recurso.");
@@ -102,8 +107,14 @@ const ProfileCompa = () => {
                 });
             }
         } catch (error) {
-            console.error("Error al obtener perfil:", error);
-            setErrorMsg("No se pudo cargar el perfil.");
+            // Error al obtener perfil
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "No se pudo cargar el perfil.",
+                timer: 2000,
+                showConfirmButton: false
+            });
         } finally {
             setLoading(false);
         }
@@ -189,8 +200,14 @@ const ProfileCompa = () => {
                 showConfirmButton: false
             });
         } catch (error) {
-            console.error("Error al actualizar perfil:", error);
-            setErrorMsg(error.message);
+            // Error al actualizar perfil
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "No se pudo actualizar el perfil.",
+                timer: 2000,
+                showConfirmButton: false
+            });
         }
     };
 

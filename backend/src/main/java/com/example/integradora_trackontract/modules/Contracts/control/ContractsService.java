@@ -12,6 +12,7 @@ import com.example.integradora_trackontract.modules.Contracts.model.ContractsDTO
 import com.example.integradora_trackontract.modules.Contracts.model.ContractsRepository;
 import com.example.integradora_trackontract.utils.Message;
 import com.example.integradora_trackontract.utils.TypesResponse;
+import com.example.integradora_trackontract.config.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import java.io.ByteArrayOutputStream;
-import java.time.format.DateTimeFormatter;
 
 
 @Transactional
@@ -53,14 +54,16 @@ public class ContractsService {
     private final ClientsRepository clientsRepository;
     private final CategoriesRepository categoriesRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
 
     @Autowired
-    public ContractsService(ContractsRepository contractsRepository, ClientsRepository clientsRepository, CategoriesRepository categoriesRepository, UserRepository userRepository) {
+    public ContractsService(ContractsRepository contractsRepository, ClientsRepository clientsRepository, CategoriesRepository categoriesRepository, UserRepository userRepository, EmailService emailService) {
         this.contractsRepository = contractsRepository;
         this.clientsRepository = clientsRepository;
         this.categoriesRepository = categoriesRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
 
@@ -589,5 +592,307 @@ public class ContractsService {
         }
     }
 
+    // Método para aceptar un contrato por parte del abogado
+    @Transactional
+    public ResponseEntity<Message> acceptContract(Long contractId, Long abogadoId) {
+        try {
+            logger.info("Intentando aceptar contrato {} por abogado {}", contractId, abogadoId);
+            
+            // Verificar que el contrato existe
+            Optional<Contracts> contractOpt = contractsRepository.findById(contractId);
+            if (contractOpt.isEmpty()) {
+                logger.warn("Contrato {} no encontrado", contractId);
+                return new ResponseEntity<>(new Message(null, "Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+            }
+            
+            Contracts contract = contractOpt.get();
+            
+            // Verificar que el abogado existe
+            Optional<User> abogadoOpt = userRepository.findById(abogadoId);
+            if (abogadoOpt.isEmpty()) {
+                logger.warn("Abogado {} no encontrado", abogadoId);
+                return new ResponseEntity<>(new Message(null, "Abogado no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+            }
+            
+            User abogado = abogadoOpt.get();
+            
+            // Verificar que el abogado está asignado al contrato
+            if (contract.getAbogado_id() == null || !contract.getAbogado_id().getId().equals(abogadoId)) {
+                logger.warn("Abogado {} no está asignado al contrato {}", abogadoId, contractId);
+                return new ResponseEntity<>(new Message(null, "No tienes permisos para aceptar este contrato", TypesResponse.ERROR), HttpStatus.FORBIDDEN);
+            }
+            
+            // Verificar que el contrato no haya sido ya aceptado
+            if (contract.isStatus()) {
+                logger.warn("Contrato {} ya ha sido aceptado anteriormente", contractId);
+                return new ResponseEntity<>(new Message(null, "Este contrato ya ha sido aceptado", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+            }
+            
+            // Log del estado actual del contrato
+            logger.info("Estado actual del contrato {}: status={}, abogado_id={}", 
+                contractId, contract.isStatus(), 
+                contract.getAbogado_id() != null ? contract.getAbogado_id().getId() : "null");
+            
+            // Cambiar el estado del contrato a aceptado
+            boolean oldStatus = contract.isStatus();
+            contract.setStatus(true); // Activar el contrato
+            contract.setUpdated_at(LocalDateTime.now());
+            
+            logger.info("Cambiando estado del contrato {} de {} a {}", contractId, oldStatus, contract.isStatus());
+            
+            // Guardar el contrato
+            Contracts savedContract = contractsRepository.save(contract);
+            logger.info("Contrato guardado con ID: {}, nuevo status: {}", savedContract.getId(), savedContract.isStatus());
+            
+            // Enviar email al cliente con los detalles del contrato
+            try {
+                String clientEmail = contract.getClient_id().getEmail();
+                String clientName = contract.getClient_id().getRepresentative_name() + " " + contract.getClient_id().getRepresentative_surnames();
+                String abogadoName = abogado.getName() + " " + abogado.getLastName();
+                
+                String subject = "✅ Contrato Aceptado - " + contract.getName();
+                
+                String htmlContent = """
+                <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center; color: white;">
+                        <h1 style="margin: 0; font-size: 24px;">🎉 ¡Contrato Aceptado!</h1>
+                        <p style="margin: 10px 0 0 0; font-size: 16px;">Su contrato ha sido revisado y aceptado</p>
+                    </div>
+                    
+                    <div style="padding: 30px; background-color: #f9f9f9;">
+                        <h2 style="color: #2c3e50; margin-bottom: 20px;">Hola %s,</h2>
+                        
+                        <p style="font-size: 16px; margin-bottom: 20px;">
+                            Nos complace informarle que su contrato ha sido <strong>aceptado y aprobado</strong> por nuestro equipo legal.
+                        </p>
+                        
+                        <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 20px 0;">
+                            <h3 style="color: #27ae60; margin-top: 0;">📋 Detalles del Contrato</h3>
+                            
+                            <table style="width: 100%%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold; color: #555;">Nombre del Contrato:</td>
+                                    <td style="padding: 8px 0; color: #333;">%s</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold; color: #555;">Descripción:</td>
+                                    <td style="padding: 8px 0; color: #333;">%s</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold; color: #555;">Fecha de Vencimiento:</td>
+                                    <td style="padding: 8px 0; color: #333;">%s</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold; color: #555;">Categoría:</td>
+                                    <td style="padding: 8px 0; color: #333;">%s</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold; color: #555;">Abogado Asignado:</td>
+                                    <td style="padding: 8px 0; color: #333;">%s</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold; color: #555;">Estado:</td>
+                                    <td style="padding: 8px 0; color: #27ae60; font-weight: bold;">✅ ACEPTADO</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #27ae60; margin: 20px 0;">
+                            <h4 style="color: #27ae60; margin-top: 0;">🎯 Próximos Pasos</h4>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Su contrato está ahora <strong>activo y en proceso</strong></li>
+                                <li>Nuestro equipo legal comenzará a trabajar en su caso</li>
+                                <li>Recibirá actualizaciones periódicas sobre el progreso</li>
+                                <li>Puede acceder a su contrato desde su panel de cliente</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="http://localhost:3000/login" style="background-color: #27ae60; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                                🔐 Acceder a Mi Panel
+                            </a>
+                        </div>
+                        
+                        <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                        
+                        <p style="font-size: 14px; color: #666; text-align: center;">
+                            Si tiene alguna pregunta, no dude en contactarnos.<br>
+                            <strong>Equipo Legal - TrackOnTract</strong><br>
+                            📧 soporte@trackontract.com | 📞 +52 55 1234 5678
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """.formatted(
+                    clientName,
+                    contract.getName(),
+                    contract.getDescription() != null ? contract.getDescription() : "Sin descripción",
+                    contract.getDue_date() != null ? contract.getDue_date().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "No especificada",
+                    contract.getCategory_id() != null ? contract.getCategory_id().getName() : "No especificada",
+                    abogadoName
+                );
+                
+                emailService.sendEmail(clientEmail, subject, htmlContent);
+                logger.info("Email enviado exitosamente al cliente {} ({})", clientName, clientEmail);
+                
+            } catch (Exception emailError) {
+                logger.error("Error enviando email al cliente: {}", emailError.getMessage());
+                // No fallamos la operación si el email falla, solo lo registramos
+            }
+            
+            // Verificar que se guardó correctamente
+            Optional<Contracts> verifyContract = contractsRepository.findById(contractId);
+            if (verifyContract.isPresent()) {
+                logger.info("Verificación: contrato {} tiene status: {}", contractId, verifyContract.get().isStatus());
+            } else {
+                logger.warn("No se pudo verificar el contrato después de guardar");
+            }
+            
+            logger.info("Contrato {} aceptado exitosamente por abogado {}", contractId, abogadoId);
+            return new ResponseEntity<>(new Message(savedContract, "Contrato aceptado exitosamente. Se ha enviado una notificación por email al cliente.", TypesResponse.SUCCESS), HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Error aceptando contrato {}: {}", contractId, e.getMessage());
+            return new ResponseEntity<>(new Message(null, "Error interno del servidor", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
+    // Método para rechazar un contrato por parte del abogado
+    @Transactional
+    public ResponseEntity<Message> rejectContract(Long contractId, Long abogadoId, String rejectionReason) {
+        try {
+            logger.info("Intentando rechazar contrato {} por abogado {} con motivo: {}", contractId, abogadoId, rejectionReason);
+            
+            // Verificar que el contrato existe
+            Optional<Contracts> contractOpt = contractsRepository.findById(contractId);
+            if (contractOpt.isEmpty()) {
+                logger.warn("Contrato {} no encontrado", contractId);
+                return new ResponseEntity<>(new Message(null, "Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+            }
+            
+            Contracts contract = contractOpt.get();
+            
+            // Verificar que el abogado existe
+            Optional<User> abogadoOpt = userRepository.findById(abogadoId);
+            if (abogadoOpt.isEmpty()) {
+                logger.warn("Abogado {} no encontrado", abogadoId);
+                return new ResponseEntity<>(new Message(null, "Abogado no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+            }
+            
+            User abogado = abogadoOpt.get();
+            
+            // Verificar que el abogado está asignado al contrato
+            if (contract.getAbogado_id() == null || !contract.getAbogado_id().getId().equals(abogadoId)) {
+                logger.warn("Abogado {} no está asignado al contrato {}", abogadoId, contractId);
+                return new ResponseEntity<>(new Message(null, "No tienes permisos para rechazar este contrato", TypesResponse.ERROR), HttpStatus.FORBIDDEN);
+            }
+            
+            // Validar que se proporcione un motivo de rechazo
+            if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+                logger.warn("Motivo de rechazo no proporcionado para contrato {}", contractId);
+                return new ResponseEntity<>(new Message(null, "Debe proporcionar un motivo para rechazar el contrato", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
+            }
+            
+            // Log del estado actual del contrato
+            logger.info("Estado actual del contrato {}: status={}, abogado_id={}", 
+                contractId, contract.isStatus(), 
+                contract.getAbogado_id() != null ? contract.getAbogado_id().getId() : "null");
+            
+            // Por ahora, simplemente desactivamos el contrato
+            // En el futuro se puede implementar la lógica completa de aprobaciones
+            boolean oldStatus = contract.isStatus();
+            contract.setStatus(false); // Desactivar el contrato
+            contract.setUpdated_at(LocalDateTime.now());
+            
+            logger.info("Cambiando estado del contrato {} de {} a {}", contractId, oldStatus, contract.isStatus());
+            
+            // Guardar el contrato
+            Contracts savedContract = contractsRepository.save(contract);
+            logger.info("Contrato rechazado guardado con ID: {}, nuevo status: {}", savedContract.getId(), savedContract.isStatus());
+            
+            // Verificar que se guardó correctamente
+            Optional<Contracts> verifyContract = contractsRepository.findById(contractId);
+            if (verifyContract.isPresent()) {
+                logger.info("Verificación: contrato {} tiene status: {}", contractId, verifyContract.get().isStatus());
+            } else {
+                logger.warn("No se pudo verificar el contrato después de guardar");
+            }
+            
+            logger.info("Contrato {} rechazado exitosamente por abogado {} con motivo: {}", contractId, abogadoId, rejectionReason);
+            return new ResponseEntity<>(new Message(savedContract, "Contrato rechazado exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Error rechazando contrato {}: {}", contractId, e.getMessage());
+            return new ResponseEntity<>(new Message(null, "Error interno del servidor", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Método para debuggear un contrato
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> debugContract(Long contractId) {
+        try {
+            logger.info("Debuggeando contrato {}", contractId);
+            
+            Optional<Contracts> contractOpt = contractsRepository.findById(contractId);
+            if (contractOpt.isEmpty()) {
+                return new ResponseEntity<>(new Message(null, "Contrato no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+            }
+            
+            Contracts contract = contractOpt.get();
+            
+            Map<String, Object> debugInfo = Map.of(
+                "id", contract.getId(),
+                "name", contract.getName(),
+                "status", contract.isStatus(),
+                "created_at", contract.getCreated_at(),
+                "updated_at", contract.getUpdated_at(),
+                "abogado_id", contract.getAbogado_id() != null ? contract.getAbogado_id().getId() : "null",
+                "client_id", contract.getClient_id() != null ? contract.getClient_id().getId() : "null",
+                "category_id", contract.getCategory_id() != null ? contract.getCategory_id().getId() : "null"
+            );
+            
+            logger.info("Información de debug del contrato {}: {}", contractId, debugInfo);
+            return new ResponseEntity<>(new Message(debugInfo, "Información de debug del contrato", TypesResponse.SUCCESS), HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Error debuggeando contrato {}: {}", contractId, e.getMessage());
+            return new ResponseEntity<>(new Message(null, "Error interno del servidor", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Método para debuggear contratos de un abogado
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> debugAbogadoContracts(Long abogadoId) {
+        try {
+            logger.info("Debuggeando contratos del abogado {}", abogadoId);
+            
+            List<Contracts> contracts = contractsRepository.findAllByAbogado(abogadoId);
+            logger.info("Contratos encontrados para abogado {}: {}", abogadoId, contracts.size());
+            
+            List<Map<String, Object>> debugInfo = contracts.stream()
+                .map(contract -> {
+                    Map<String, Object> contractInfo = new java.util.HashMap<>();
+                    contractInfo.put("id", contract.getId());
+                    contractInfo.put("name", contract.getName());
+                    contractInfo.put("status", contract.isStatus());
+                    contractInfo.put("created_at", contract.getCreated_at());
+                    contractInfo.put("updated_at", contract.getUpdated_at());
+                    contractInfo.put("abogado_id", contract.getAbogado_id() != null ? contract.getAbogado_id().getId() : "null");
+                    contractInfo.put("client_id", contract.getClient_id() != null ? contract.getClient_id().getId() : "null");
+                    contractInfo.put("category_id", contract.getCategory_id() != null ? contract.getCategory_id().getId() : "null");
+                    return contractInfo;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
+            logger.info("Información de debug de contratos del abogado {}: {}", abogadoId, debugInfo);
+            return new ResponseEntity<>(new Message(debugInfo, "Información de debug de contratos del abogado", TypesResponse.SUCCESS), HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Error debuggeando contratos del abogado {}: {}", abogadoId, e.getMessage());
+            return new ResponseEntity<>(new Message(null, "Error interno del servidor", TypesResponse.ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+}
 

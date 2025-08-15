@@ -69,7 +69,6 @@ public class ClientsController {
 
     @GetMapping("/me")
     public ResponseEntity<Message> getMyProfile(@RequestParam String email) {
-        System.out.println("Endpoint /clients/me llamado con email: " + email);
         return clientsService.getProfileByEmail(email);
     }
 

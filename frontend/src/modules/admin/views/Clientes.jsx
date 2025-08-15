@@ -43,7 +43,7 @@ export default function Clientes() {
         setClientes([]);
       }
     } catch (error) {
-      console.error("Error al obtener clientes:", error);
+      // Error al obtener clientes
       setClientes([]);
     } finally {
       setLoading(false);
@@ -80,8 +80,7 @@ export default function Clientes() {
       Swal.fire("Eliminado", "El cliente fue eliminado correctamente.", "success");
       setClientes((prev) => prev.filter((cliente) => cliente.id !== id));
     } catch (error) {
-      console.error("Error eliminando cliente:", error);
-      Swal.fire("Error", error.message, "error");
+      Swal.fire("Error", "No se pudo eliminar el cliente", "error");
     }
   }
 

@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import org.springframework.core.io.ByteArrayResource;
+import com.example.integradora_trackontract.utils.TypesResponse;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/contracts")
@@ -104,6 +108,65 @@ public class ContractsController {
     @GetMapping("/client/{clientId}/can-have-contract")
     public ResponseEntity<Message> canClientHaveNewContract(@PathVariable Long clientId) {
         return contractsService.canClientHaveNewContract(clientId);
+    }
+
+    @GetMapping("/test-auth")
+    public ResponseEntity<Message> testAuth() {
+        return ResponseEntity.ok(new Message("OK", "Autenticación funcionando", TypesResponse.SUCCESS));
+    }
+
+    @GetMapping("/public/test")
+    public ResponseEntity<Message> publicTest() {
+        return ResponseEntity.ok(new Message("OK", "Backend funcionando sin autenticación", TypesResponse.SUCCESS));
+    }
+
+    @GetMapping("/debug-user")
+    public ResponseEntity<Message> debugUser() {
+        try {
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) auth.getPrincipal();
+                String username = userDetails.getUsername();
+                String authorities = auth.getAuthorities().stream()
+                    .map(Object::toString)
+                    .reduce("", (a, b) -> a + ", " + b);
+                
+                return ResponseEntity.ok(new Message(
+                    Map.of("username", username, "authorities", authorities), 
+                    "Usuario autenticado", 
+                    TypesResponse.SUCCESS
+                ));
+            } else {
+                return ResponseEntity.ok(new Message("No autenticado", "No hay usuario autenticado", TypesResponse.WARNING));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.ok(new Message(e.getMessage(), "Error obteniendo información del usuario", TypesResponse.ERROR));
+        }
+    }
+
+    @GetMapping("/{contractId}/debug")
+    public ResponseEntity<Message> debugContract(@PathVariable Long contractId) {
+        return contractsService.debugContract(contractId);
+    }
+
+    @GetMapping("/by-abogado/{abogadoId}/debug")
+    public ResponseEntity<Message> debugAbogadoContracts(@PathVariable Long abogadoId) {
+        return contractsService.debugAbogadoContracts(abogadoId);
+    }
+
+    @PostMapping("/{contractId}/accept")
+    public ResponseEntity<Message> acceptContract(
+            @PathVariable Long contractId,
+            @RequestParam Long abogadoId) {
+        return contractsService.acceptContract(contractId, abogadoId);
+    }
+
+    @PostMapping("/{contractId}/reject")
+    public ResponseEntity<Message> rejectContract(
+            @PathVariable Long contractId,
+            @RequestParam Long abogadoId,
+            @RequestBody String rejectionReason) {
+        return contractsService.rejectContract(contractId, abogadoId, rejectionReason);
     }
 
 }

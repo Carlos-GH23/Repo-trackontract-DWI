@@ -17,6 +17,11 @@ const Contract = () => {
         fetchContratos();
     }, []);
 
+    // Monitorear cambios en contratos
+    useEffect(() => {
+        // Estado de contratos actualizado
+    }, [contratos]);
+
     const fetchContratos = async () => {
         try {
             setCargando(true);
@@ -50,7 +55,6 @@ const Contract = () => {
                 setContratos([]);
             }
         } catch (error) {
-            console.error("Error al obtener contratos:", error);
             setMensaje("Error al cargar contratos: " + error.message);
             Swal.fire({
                 icon: 'error',
@@ -66,6 +70,17 @@ const Contract = () => {
 
     const aceptarContrato = async (contrato) => {
         try {
+            // Validar que el contrato no haya sido ya aceptado
+            if (contrato.status) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Contrato ya aceptado',
+                    text: 'Este contrato ya ha sido aceptado y no se puede modificar.',
+                    confirmButtonColor: '#7F56D9',
+                });
+                return;
+            }
+
             // Mostrar spinner circular infinito
             Swal.fire({
                 title: 'Procesando...',
@@ -98,23 +113,54 @@ const Contract = () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Error al aceptar el contrato');
+                let errorMessage = 'Error al aceptar el contrato';
+                
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (jsonError) {
+                    // Si no se puede parsear JSON, usar el status text
+                    if (response.status === 403) {
+                        errorMessage = 'No tienes permisos para realizar esta acción';
+                    } else if (response.status === 404) {
+                        errorMessage = 'Contrato no encontrado';
+                    } else if (response.status === 500) {
+                        errorMessage = 'Error interno del servidor';
+                    } else {
+                        errorMessage = `Error ${response.status}: ${response.statusText}`;
+                    }
+                }
+                
+                throw new Error(errorMessage);
             }
 
             // Actualizar la lista de contratos
             await fetchContratos();
 
+            // Debug: verificar el estado del contrato
+            try {
+                const debugResponse = await fetch(`http://localhost:8080/contracts/${contrato.id}/debug`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+                if (debugResponse.ok) {
+                    const debugData = await debugResponse.json();
+                }
+            } catch (debugError) {
+                // Error al debuggear contrato
+            }
+
             // Mostrar éxito
             Swal.fire({
-                title: '¡Éxito!',
-                html: '<strong>Contrato aceptado</strong><br>El contrato ha sido enviado al cliente',
+                title: '¡Contrato Aceptado!',
+                html: '<strong>✅ Contrato aceptado exitosamente</strong><br><br>' +
+                      'El contrato ha sido enviado al cliente por email y ya no se puede modificar.',
                 icon: 'success',
                 showConfirmButton: true,
                 confirmButtonColor: '#7F56D9',
             });
         } catch (error) {
-            console.error("Error al aceptar contrato:", error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -131,6 +177,17 @@ const Contract = () => {
 
     const rechazarContrato = async () => {
         try {
+            // Validar que el contrato no haya sido ya aceptado
+            if (contratoRechazar.status) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Contrato ya aceptado',
+                    text: 'Este contrato ya ha sido aceptado y no se puede rechazar.',
+                    confirmButtonColor: '#7F56D9',
+                });
+                return;
+            }
+
             // Validación: comentario vacío
             if (!comentario.trim()) {
                 Swal.fire({
@@ -164,8 +221,25 @@ const Contract = () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Error al rechazar el contrato');
+                let errorMessage = 'Error al rechazar el contrato';
+                
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (jsonError) {
+                    // Si no se puede parsear JSON, usar el status text
+                    if (response.status === 403) {
+                        errorMessage = 'No tienes permisos para realizar esta acción';
+                    } else if (response.status === 404) {
+                        errorMessage = 'Contrato no encontrado';
+                    } else if (response.status === 500) {
+                        errorMessage = 'Error interno del servidor';
+                    } else {
+                        errorMessage = `Error ${response.status}: ${response.statusText}`;
+                    }
+                }
+                
+                throw new Error(errorMessage);
             }
 
             // Cerrar modal y limpiar estado
@@ -176,6 +250,20 @@ const Contract = () => {
             // Actualizar la lista de contratos
             await fetchContratos();
 
+            // Debug: verificar el estado del contrato
+            try {
+                const debugResponse = await fetch(`http://localhost:8080/contracts/${contratoRechazar.id}/debug`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+                if (debugResponse.ok) {
+                    const debugData = await debugResponse.json();
+                }
+            } catch (debugError) {
+                // Error al debuggear contrato
+            }
+
             // Alerta de éxito
             Swal.fire({
                 icon: 'success',
@@ -184,7 +272,6 @@ const Contract = () => {
                 confirmButtonColor: '#7F56D9',
             });
         } catch (error) {
-            console.error("Error al rechazar contrato:", error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -200,13 +287,34 @@ const Contract = () => {
         <div className="min-h-screen bg-white p-6">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Mis Contratos Asignados</h1>
-                <input
-                    type="text"
-                    placeholder="Buscar contrato..."
-                    value={filtroNombre}
-                    onChange={(e) => setFiltroNombre(e.target.value)}
-                    className="border border-gray-300 rounded-md p-2"
-                />
+                <div className="flex gap-2">
+                    <button
+                        onClick={async () => {
+                            const token = localStorage.getItem("accessToken");
+                            const userId = localStorage.getItem("userId");
+                            try {
+                                const response = await fetch(`http://localhost:8080/contracts/by-abogado/${userId}/debug`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                if (response.ok) {
+                                    const data = await response.json();
+                                }
+                            } catch (error) {
+                                // Error en debug
+                            }
+                        }}
+                        className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                    >
+                        Debug
+                    </button>
+                    <input
+                        type="text"
+                        placeholder="Buscar contrato..."
+                        value={filtroNombre}
+                        onChange={(e) => setFiltroNombre(e.target.value)}
+                        className="border border-gray-300 rounded-md p-2"
+                    />
+                </div>
             </div>
 
             {cargando ? (
@@ -237,24 +345,8 @@ const Contract = () => {
                                         <span className={`text-sm font-medium px-2 py-1 rounded-full ${
                                             contrato.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                                         }`}>
-                                            {contrato.status ? "Activo" : "Inactivo"}
+                                            {contrato.status ? "Aceptado y Notificado al Cliente" : "Pendiente de Aprobación"}
                                         </span>
-                                        {contrato.approvalStatus && (
-                                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                                                contrato.approvalStatus === 'ACEPTADO' ? "bg-blue-100 text-blue-800" :
-                                                contrato.approvalStatus === 'RECHAZADO' ? "bg-red-100 text-red-800" :
-                                                "bg-yellow-100 text-yellow-800"
-                                            }`}>
-                                                {contrato.approvalStatus === 'ACEPTADO' ? 'Aceptado' :
-                                                 contrato.approvalStatus === 'RECHAZADO' ? 'Rechazado' :
-                                                 'Pendiente'}
-                                            </span>
-                                        )}
-                                        {!contrato.approvalStatus && (
-                                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
-                                                Pendiente
-                                            </span>
-                                        )}
                                     </div>
                                 </div>
 
@@ -268,30 +360,39 @@ const Contract = () => {
                                             {contrato.description || "Sin descripción"}
                                         </p>
                                     </div>
+                                    
+                                    {contrato.status && (
+                                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                            <p className="text-blue-800 text-sm">
+                                                <strong>✅ Contrato Aceptado:</strong> Este contrato ha sido aceptado y se ha enviado una notificación por email al cliente. 
+                                                No se pueden realizar más modificaciones.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex justify-end gap-4 mt-6">
                                     <button
                                         className={`px-4 py-2 rounded-lg ${
-                                            (contrato.approvalStatus === 'PENDIENTE' || !contrato.approvalStatus)
+                                            !contrato.status
                                                 ? 'bg-green-600 hover:bg-green-700 text-white'
                                                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                                         }`}
                                         onClick={() => aceptarContrato(contrato)}
-                                        disabled={contrato.approvalStatus === 'ACEPTADO' || contrato.approvalStatus === 'RECHAZADO'}
+                                        disabled={contrato.status}
                                     >
-                                        {contrato.approvalStatus === 'ACEPTADO' ? 'Aceptado' : 'Aceptar contrato'}
+                                        {contrato.status ? 'Aceptado' : 'Aceptar contrato'}
                                     </button>
                                     <button
                                         className={`px-4 py-2 rounded-lg ${
-                                            (contrato.approvalStatus === 'PENDIENTE' || !contrato.approvalStatus)
+                                            !contrato.status
                                                 ? 'bg-red-600 hover:bg-red-700 text-white'
                                                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                                         }`}
                                         onClick={() => abrirModalRechazo(contrato)}
-                                        disabled={contrato.approvalStatus === 'ACEPTADO' || contrato.approvalStatus === 'RECHAZADO'}
+                                        disabled={contrato.status}
                                     >
-                                        {contrato.approvalStatus === 'RECHAZADO' ? 'Rechazado' : 'Rechazar contrato'}
+                                        {contrato.status ? 'No disponible' : 'Rechazar contrato'}
                                     </button>
                                 </div>
                             </div>
