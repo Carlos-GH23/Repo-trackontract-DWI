@@ -26,11 +26,7 @@ public class ContractsDTO {
     @NotNull(groups = {Register.class, ChangeStatus.class})
     private Boolean status;
 
-    private String approvalStatus;
 
-    private String approvedAt;
-
-    private String rejectionReason;
 
     @NotNull(groups = {Register.class, Modify.class}, message = "El cliente no puede ser nulo")
     private ClientsDTO clientsDTO;
@@ -129,29 +125,7 @@ public class ContractsDTO {
         this.abogadoDTO = abogadoDTO;
     }
 
-    public String getApprovalStatus() {
-        return approvalStatus;
-    }
 
-    public void setApprovalStatus(String approvalStatus) {
-        this.approvalStatus = approvalStatus;
-    }
-
-    public String getApprovedAt() {
-        return approvedAt;
-    }
-
-    public void setApprovedAt(String approvedAt) {
-        this.approvedAt = approvedAt;
-    }
-
-    public String getRejectionReason() {
-        return rejectionReason;
-    }
-
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
-    }
 
     public interface Register {}
     public interface  Modify {}

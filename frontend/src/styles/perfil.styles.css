@@ -103,3 +103,113 @@ input:focus {
     border-radius: 8px;
     background-color: #f7f7f7;
 }
+
+/* Estilos para el modal de cambio de contraseña */
+.password-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.password-modal {
+    background-color: #f9f9f9;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.4);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.password-modal h3 {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #222;
+    font-weight: 500;
+}
+
+.password-modal .fila-contrasenas {
+    margin-bottom: 20px;
+}
+
+.password-modal .campo {
+    margin-bottom: 15px;
+}
+
+.password-modal .campo label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.password-modal .campo input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    background-color: #f7f7f7;
+    color: #333;
+    font-size: 16px;
+    box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.password-modal .campo input:focus {
+    outline: none;
+    border-color: #0077cc;
+    box-shadow: 0 0 8px rgba(0, 119, 204, 0.3);
+    background-color: #fff;
+}
+
+.password-modal .boton-container1 {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.password-modal .btn {
+    min-width: 150px;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.password-modal .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+    .password-modal {
+        padding: 20px;
+        margin: 20px;
+        width: calc(100% - 40px);
+    }
+    
+    .password-modal .fila-contrasenas {
+        flex-direction: column;
+    }
+    
+    .password-modal .boton-container1 {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .password-modal .btn {
+        width: 100%;
+        max-width: 250px;
+    }
+}

@@ -5,7 +5,6 @@ import com.example.integradora_trackontract.modules.Clients.model.Clients;
 import com.example.integradora_trackontract.modules.Contract_Approvals.model.Contract_Approvals;
 import com.example.integradora_trackontract.modules.User_Contracts.model.User_Contracts;
 import com.example.integradora_trackontract.modules.User.model.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,12 +17,6 @@ import java.util.List;
 @Entity
 @Table(name = "contracts")
 public class Contracts {
-    
-    public enum ApprovalStatus {
-        PENDIENTE,
-        ACEPTADO,
-        RECHAZADO
-    }
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,16 +34,6 @@ public class Contracts {
     @Column(name = "status", columnDefinition = "BOOL DEFAULT TRUE")
     private boolean status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "approval_status", columnDefinition = "VARCHAR(20) DEFAULT 'PENDIENTE'")
-    private ApprovalStatus approvalStatus;
-
-    @Column(name = "approved_at")
-    private LocalDateTime approvedAt;
-
-    @Column(name = "rejection_reason", columnDefinition = "TEXT")
-    private String rejectionReason;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime created_at;
@@ -66,15 +49,15 @@ public class Contracts {
     private List<User_Contracts> user_contracts;
 
     @ManyToOne
-    @JsonIgnore
+    @JsonManagedReference
     private Categories category_id;
 
     @ManyToOne
-    @JsonIgnore
+    @JsonManagedReference
     private Clients client_id;
 
     @ManyToOne
-    @JsonIgnore
+    @JsonManagedReference
     private User abogado_id;
 
     public Contracts() {
@@ -195,29 +178,5 @@ public class Contracts {
 
     public void setAbogado_id(User abogado_id) {
         this.abogado_id = abogado_id;
-    }
-
-    public ApprovalStatus getApprovalStatus() {
-        return approvalStatus;
-    }
-
-    public void setApprovalStatus(ApprovalStatus approvalStatus) {
-        this.approvalStatus = approvalStatus;
-    }
-
-    public LocalDateTime getApprovedAt() {
-        return approvedAt;
-    }
-
-    public void setApprovedAt(LocalDateTime approvedAt) {
-        this.approvedAt = approvedAt;
-    }
-
-    public String getRejectionReason() {
-        return rejectionReason;
-    }
-
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
     }
 }

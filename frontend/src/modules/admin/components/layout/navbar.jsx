@@ -22,7 +22,7 @@ const Navbar = () => {
                 }
             });
         } catch (error) {
-            console.error("Error al cerrar sesión:", error);
+            // Error al cerrar sesión
         }
 
         localStorage.removeItem("access_token");
@@ -71,6 +71,10 @@ const Navbar = () => {
         '/admin/categorias/inactivas': {
             title: 'Categorías Inactivas',
             subtitle: 'Gestión de Categorías Inactivas',
+        },
+        '/admin/bitacora': {
+            title: 'Bitácora',
+            subtitle: 'Aquí podrás visualizar tú bitácora',
         },
         '/admin/perfil': {
             title: 'Perfil',

@@ -1,7 +1,7 @@
 package com.example.integradora_trackontract.modules.Categories.model;
 
 import com.example.integradora_trackontract.modules.Contracts.model.Contracts;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -24,6 +24,7 @@ public class Categories {
     private boolean status;
 
     @OneToMany(mappedBy = "category_id", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Contracts> contracts;
 
     public Categories() {

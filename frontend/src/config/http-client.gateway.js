@@ -47,16 +47,13 @@ AxiosClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response) {
-            const { status, data } = error.response;
-            let errorMessage = Object.values(errorMessages).find(msg => msg.title === data.text);
+            const { status, config, data } = error.response;
 
-            if (!errorMessage && data.text) {
-                errorMessage = { title: "Error", message: data.text };
-            }
+            // NO redirigir en rutas de password recovery
+            const skipRedirect = ['/auth/password/forgot', '/auth/password/reset', '/auth/validate-recovery-token']
+                .some(url => config.url.includes(url));
 
-            errorMessage = errorMessage || errorMessages.UNEXPECTED_ERROR;
-
-            if (status === 401 || status === 403) {
+            if ((status === 401 || status === 403) && !skipRedirect) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 localStorage.removeItem('roles');
@@ -64,12 +61,11 @@ AxiosClient.interceptors.response.use(
             }
 
             swal.fire({
-                title: errorMessage.title,
-                text: errorMessage.message,
+                title: data?.text || 'Error',
+                text: data?.text || 'Ha ocurrido un error',
                 icon: "warning",
                 confirmButtonText: "Aceptar",
             });
-
         } else {
             swal.fire({
                 title: "Error de conexión",
@@ -78,9 +74,12 @@ AxiosClient.interceptors.response.use(
                 confirmButtonText: "Aceptar",
             });
         }
+
         return Promise.reject(error);
     }
 );
+
+
 
 const httpClient = {
     get: (endpoint) => AxiosClient.get(endpoint),

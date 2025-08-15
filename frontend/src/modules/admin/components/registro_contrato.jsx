@@ -54,8 +54,7 @@ export default function RegistroContrato() {
         setClientes([])
       }
     } catch (err) {
-      console.error("Error al obtener clientes:", err)
-      setError("Error al cargar clientes: " + err.message)
+      setClientes([]);
     }
   }
 
@@ -87,8 +86,7 @@ export default function RegistroContrato() {
         setCategorias([])
       }
     } catch (err) {
-      console.error("Error al obtener categorías:", err)
-      setError("Error al cargar categorías: " + err.message)
+      setCategorias([]);
     }
   }
 
@@ -120,8 +118,7 @@ export default function RegistroContrato() {
         setAbogados([])
       }
     } catch (err) {
-      console.error("Error al obtener abogados:", err)
-      setError("Error al cargar abogados: " + err.message)
+      setAbogados([]);
     }
   }
 
@@ -199,17 +196,19 @@ export default function RegistroContrato() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        console.log("Error response body:", errorData)
-        
-        // Extraer el mensaje de error del backend
         let errorMessage = "Error al crear contrato"
-        if (errorData.message) {
-          errorMessage = errorData.message
-        } else if (errorData.text) {
-          errorMessage = errorData.text
-        } else if (errorData.error) {
-          errorMessage = errorData.error
+        try {
+          const errorData = await response.json()
+          if (errorData.message) {
+            errorMessage = errorData.message
+          } else if (errorData.text) {
+            errorMessage = errorData.text
+          } else if (errorData.error) {
+            errorMessage = errorData.error
+          }
+        } catch (jsonError) {
+            // Error al parsear JSON del error
+            errorMessage = `Error ${response.status}: ${response.statusText}`;
         }
         
         throw new Error(errorMessage)
@@ -227,7 +226,6 @@ export default function RegistroContrato() {
       })
       
     } catch (err) {
-      console.error("Error al crear contrato:", err)
       setError(err.message)
     } finally {
       setLoading(false)

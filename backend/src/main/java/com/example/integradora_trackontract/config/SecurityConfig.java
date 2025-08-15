@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req.requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/contracts/public/**").permitAll()
 
                                 // Permitir que usuarios autenticados accedan a su propio perfil y funcionalidades básicas
                                 .requestMatchers("/users/me", "/users/me/**")
@@ -49,9 +50,13 @@ public class SecurityConfig {
                                 .requestMatchers("/users/update")
                                 .authenticated()
 
-                                // Solo ADMIN puede acceder a gestión de usuarios
+                                // Solo ADMIN y ABOGADO pueden acceder a gestión de usuarios
                                 .requestMatchers("/users/**")
-                                .hasRole("ADMIN")
+                                .hasAnyRole("ADMIN", "ABOGADO")
+
+                                // Permitir que los clientes accedan a su propio perfil (ANTES de la regla general)
+                                .requestMatchers("/clients/me", "/clients/me/**")
+                                .hasRole("CLIENT")
 
                                 // Solo ADMIN y ABOGADO pueden acceder a gestión de clientes
                                 .requestMatchers("/clients/**")

@@ -37,6 +37,8 @@ public class UserController {
 
     @PostMapping("/save")
     public ResponseEntity<Message> saveUsers(@Validated(UserDTO.Register.class) @RequestBody UserDTO dto) {
+        System.out.println("DEBUG - Llegó al UserController.saveUsers");
+        System.out.println("DEBUG - Usuario a crear: " + dto.getEmail());
         return userService.save(dto);
     }
 
@@ -81,6 +83,8 @@ public class UserController {
         return userService.findAllByRole("CLIENT");
     }
 
+
+
     @GetMapping("/me")
     public ResponseEntity<UserProfileDTO> me(
             @AuthenticationPrincipal UserDetails userDetails
@@ -95,6 +99,16 @@ public class UserController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails ud,
             @Validated @RequestBody ChangePasswordRequest body) {
         return userService.changeMyPassword(ud.getUsername(), body);
+    }
+
+    // Actualizar contraseña sin verificar la actual
+    @PutMapping("/me/password/update")
+    public ResponseEntity<Message> updatePasswordWithoutCurrent(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails ud,
+            @RequestBody java.util.Map<String, String> body) {
+        String newPassword = body.get("newPassword");
+        String confirmPassword = body.get("confirmPassword");
+        return userService.updatePasswordWithoutCurrent(ud.getUsername(), newPassword, confirmPassword);
     }
 
     @PutMapping("/me")

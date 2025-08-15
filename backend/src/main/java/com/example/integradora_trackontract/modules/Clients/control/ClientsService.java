@@ -66,26 +66,41 @@ public class ClientsService {
     //Guardar Clientes
     @Transactional(rollbackFor = {SQLException.class})
     public ResponseEntity<Message> save(ClientsDTO dto) {
-        Optional<Clients> existingClients = clientsRepository.findByName(dto.getName());
+        logger.info("Iniciando creación de cliente con email: {}", dto.getEmail());
+        
+        Optional<Clients> existingClients = clientsRepository.findByEmail(dto.getEmail());
         if(existingClients.isPresent()) {
-            return new ResponseEntity<>(new Message("El cliente ya existe", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+            logger.warn("Email ya registrado: {}", dto.getEmail());
+            return new ResponseEntity<>(new Message("El email ya está registrado", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
+        logger.info("Validando campos del cliente - Name: {}, Business: {}, Rep: {}, RepSurnames: {}, Email: {}, Phone: {}, Status: {}", 
+            dto.getName(), dto.getBusiness_name(), dto.getRepresentative_name(), 
+            dto.getRepresentative_surnames(), dto.getEmail(), dto.getPhone(), dto.getStatus());
+            
         if(dto.getName().length() > 50){
+            logger.warn("Nombre del cliente excede 50 caracteres: {}", dto.getName().length());
             return new ResponseEntity<>(new Message("El nombre del cliente excede los 50 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }if(dto.getBusiness_name().length() > 50){
+            logger.warn("Nombre del negocio excede 50 caracteres: {}", dto.getBusiness_name().length());
             return new ResponseEntity<>(new Message("El nombre del negocio del cliente excede los 50 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }if(dto.getRepresentative_name().length() > 100){
+            logger.warn("Nombre del representante excede 100 caracteres: {}", dto.getRepresentative_name().length());
             return new ResponseEntity<>(new Message("El nombre del representante del cliente excede los 100 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }if(dto.getRepresentative_surnames().length() >100){
+            logger.warn("Apellidos del representante exceden 100 caracteres: {}", dto.getRepresentative_surnames().length());
             return new ResponseEntity<>(new Message("Los apellidos del representante del cliente excede los 100 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }if(dto.getEmail().length() >100){
+            logger.warn("Email excede 100 caracteres: {}", dto.getEmail().length());
             return new ResponseEntity<>(new Message("El email del cliente excede los 100 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }if(dto.getPhone().length() > 15){
+            logger.warn("Teléfono excede 15 caracteres: {}", dto.getPhone().length());
             return new ResponseEntity<>(new Message("El teléfono del cliente excede los 15 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }if(dto.getStatus() == null) {
+            logger.warn("Status del cliente es null");
             return new ResponseEntity<>(new Message("El estado del cliente no puede ser nulo", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
         }
         
+        logger.info("Creando cliente en la base de datos...");
         // Crear el cliente
         Clients clients = new Clients(dto.getName(), dto.getBusiness_name(), dto.getRepresentative_name(),
                 dto.getRepresentative_surnames(), dto.getEmail(), dto.getPhone(), true);
@@ -93,14 +108,18 @@ public class ClientsService {
         clients = clientsRepository.saveAndFlush(clients);
         
         if(clients == null) {
+            logger.error("El cliente no se registró - resultado null");
             return new ResponseEntity<>(new Message("El cliente no se registró", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
         }
         
+        logger.info("Cliente creado exitosamente con ID: {}", clients.getId());
+        
         // Crear automáticamente el usuario para el cliente
         try {
-            logger.info("Iniciando creación automática de usuario para cliente: {}", dto.getEmail());
+            logger.info("Iniciando creación automática de usuario para cliente: {} - Nombre: {}", dto.getEmail(), dto.getRepresentative_name());
             
             // Buscar el rol CLIENT
+            logger.info("Buscando rol CLIENT en la base de datos...");
             Optional<Roles> clientRole = rolesRepository.findByName("CLIENT");
             if (!clientRole.isPresent()) {
                 logger.warn("Rol CLIENT no encontrado, no se pudo crear el usuario automáticamente");
@@ -109,10 +128,12 @@ public class ClientsService {
                 
                 // Generar contraseña: nombre123
                 String password = dto.getRepresentative_name() + "123";
+                logger.info("Contraseña generada para usuario: {} (longitud: {})", password, password.length());
                 String encodedPassword = passwordEncoder.encode(password);
-                logger.info("Contraseña generada para usuario: {} -> Encriptada: {}", password, encodedPassword);
+                logger.info("Contraseña encriptada generada correctamente (longitud: {})", encodedPassword.length());
                 
                 // Crear el usuario
+                logger.info("Creando usuario en memoria...");
                 User user = new User();
                 user.setName(dto.getRepresentative_name());
                 user.setLastName(dto.getRepresentative_surnames());
@@ -125,29 +146,35 @@ public class ClientsService {
                 user.setLogin_attempts(0);
                 user.setRol_id(clientRole.get());
                 
-                logger.info("Usuario creado en memoria: {} con rol: {}", user.getEmail(), user.getRol_id().getName());
+                logger.info("Usuario creado en memoria - Email: {}, Nombre: {}, Apellido: {}, Teléfono: {}, Rol: {}, Status: {}", 
+                    user.getEmail(), user.getName(), user.getLastName(), user.getPhoneNumber(), 
+                    user.getRol_id().getName(), user.isStatus());
                 
+                logger.info("Guardando usuario en la base de datos...");
                 User savedUser = userRepository.saveAndFlush(user);
-                logger.info("Usuario guardado en BD con ID: {} y email: {}", savedUser.getId(), savedUser.getEmail());
+                logger.info("Usuario guardado exitosamente en BD - ID: {}, Email: {}, Nombre: {}, Rol: {}", 
+                    savedUser.getId(), savedUser.getEmail(), savedUser.getName(), savedUser.getRol_id().getName());
                 
                 // Verificar que se guardó correctamente
+                logger.info("Verificando que el usuario se guardó correctamente...");
                 Optional<User> verifyUser = userRepository.findByEmail(dto.getEmail());
                 if (verifyUser.isPresent()) {
                     User verifiedUser = verifyUser.get();
-                    logger.info("Usuario verificado en BD - ID: {}, Email: {}, Rol: {}, Status: {}", 
+                    logger.info("Usuario verificado exitosamente en BD - ID: {}, Email: {}, Rol: {}, Status: {}", 
                         verifiedUser.getId(), verifiedUser.getEmail(), 
                         verifiedUser.getRol_id().getName(), verifiedUser.isStatus());
                 } else {
-                    logger.error("ERROR: Usuario no se pudo verificar después de guardar");
+                    logger.error("ERROR: Usuario no se pudo verificar después de guardar - Email: {}", dto.getEmail());
                 }
                 
-                logger.info("Usuario creado automáticamente para el cliente: {}", dto.getEmail());
+                logger.info("Usuario creado automáticamente para el cliente exitosamente - Email: {}", dto.getEmail());
             }
         } catch (Exception e) {
-            logger.error("Error al crear usuario automáticamente para el cliente: {}", e.getMessage(), e);
+            logger.error("Error al crear usuario automáticamente para el cliente: {} - Error: {}", dto.getEmail(), e.getMessage(), e);
             // No fallar la creación del cliente por un error en la creación del usuario
         }
         
+        logger.info("Preparando respuesta de éxito...");
         ClientsDTO saveDTO = new ClientsDTO(
                 clients.getId(),
                 clients.getName(),
@@ -159,7 +186,9 @@ public class ClientsService {
                 clients.isStatus()
         );
         
-        logger.info("El registro ha sido realizado correctamente");
+        logger.info("Cliente registrado exitosamente - ID: {}, Email: {}, Status: {}", 
+            clients.getId(), clients.getEmail(), clients.isStatus());
+        logger.info("Retornando respuesta exitosa para cliente: {}", dto.getEmail());
         return new ResponseEntity<>(new Message(saveDTO,"El cliente se registró correctamente", TypesResponse.SUCCESS), HttpStatus.CREATED);
     }
 
@@ -284,6 +313,97 @@ public class ClientsService {
         int activeCount = clientsRepository.countByStatusIsTrue();
         int inactiveCount = clientsRepository.countByStatusIsFalse();
         logger.info("Clientes activos: {}, Clientes inactivos: {}", activeCount, inactiveCount);
+    }
+
+    // Obtener perfil del cliente por email
+    @Transactional(readOnly = true)
+    public ResponseEntity<Message> getProfileByEmail(String email) {
+        Optional<Clients> clientOptional = clientsRepository.findByEmail(email);
+        if (!clientOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Cliente no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+        
+        Clients client = clientOptional.get();
+        logger.info("Perfil del cliente obtenido correctamente para email: {}", email);
+        return new ResponseEntity<>(new Message(client, "Perfil del cliente obtenido", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
+    // Actualizar perfil del cliente
+    @Transactional(rollbackFor = {SQLException.class})
+    public ResponseEntity<Message> updateProfile(String email, ClientsDTO dto) {
+        Optional<Clients> clientOptional = clientsRepository.findByEmail(email);
+        if (!clientOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Cliente no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+
+        Clients client = clientOptional.get();
+
+        // Validaciones básicas
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getBusiness_name() == null || dto.getBusiness_name().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre del negocio no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getRepresentative_name() == null || dto.getRepresentative_name().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El nombre del representante no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getRepresentative_surnames() == null || dto.getRepresentative_surnames().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("Los apellidos del representante no pueden ser vacíos", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (dto.getPhone() == null || dto.getPhone().trim().isEmpty()) {
+            return new ResponseEntity<>(new Message("El teléfono no puede ser vacío", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+
+        // Actualizar campos
+        client.setName(dto.getName());
+        client.setBusiness_name(dto.getBusiness_name());
+        client.setRepresentative_name(dto.getRepresentative_name());
+        client.setRepresentative_surnames(dto.getRepresentative_surnames());
+        client.setPhone(dto.getPhone());
+        client.setUpdated_at(LocalDateTime.now());
+
+        client = clientsRepository.saveAndFlush(client);
+        if (client == null) {
+            return new ResponseEntity<>(new Message("El perfil no se pudo actualizar", TypesResponse.ERROR), HttpStatus.BAD_REQUEST);
+        }
+
+        logger.info("Perfil del cliente actualizado correctamente");
+        return new ResponseEntity<>(new Message(client, "Perfil actualizado correctamente", TypesResponse.SUCCESS), HttpStatus.OK);
+    }
+
+    // Actualizar contraseña del cliente
+    @Transactional(rollbackFor = {SQLException.class})
+    public ResponseEntity<Message> updatePassword(String email, String newPassword, String confirmPassword) {
+        // Primero buscar el cliente por email
+        Optional<Clients> clientOptional = clientsRepository.findByEmail(email);
+        if (!clientOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Cliente no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+
+        // Luego buscar el usuario asociado al cliente
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (!userOptional.isPresent()) {
+            return new ResponseEntity<>(new Message("Usuario no encontrado", TypesResponse.ERROR), HttpStatus.NOT_FOUND);
+        }
+
+        User user = userOptional.get();
+
+        // Validaciones básicas
+        if (!newPassword.equals(confirmPassword)) {
+            return new ResponseEntity<>(new Message("La confirmación no coincide", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+        if (newPassword.length() < 8) {
+            return new ResponseEntity<>(new Message("La nueva contraseña debe tener al menos 8 caracteres", TypesResponse.WARNING), HttpStatus.BAD_REQUEST);
+        }
+
+        // Actualizar contraseña
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdated_at(LocalDateTime.now());
+        userRepository.saveAndFlush(user);
+
+        logger.info("Contraseña del cliente actualizada correctamente");
+        return new ResponseEntity<>(new Message("Contraseña actualizada exitosamente", TypesResponse.SUCCESS), HttpStatus.OK);
     }
 
 }

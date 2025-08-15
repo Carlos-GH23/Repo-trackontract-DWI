@@ -21,8 +21,8 @@ export default function CategoriasInactivas() {
             const data = await response.json();
             setCategorias(data || []);
         } catch (error) {
-            console.error(error);
-            Swal.fire("Error", error.message, "error");
+            // Error al obtener categorías inactivas
+            setCategorias([]);
         } finally {
             setLoading(false);
         }

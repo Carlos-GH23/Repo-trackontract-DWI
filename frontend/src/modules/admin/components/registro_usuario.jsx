@@ -64,9 +64,10 @@ export default function RegistroUsuario() {
         try {
           const errJson = await response.json();
           if (errJson.text) errorMsg = errJson.text;
-        } catch {
-          const text = await response.text();
-          if (text) errorMsg = text;
+          if (errJson.result) errorMsg = errJson.result;
+        } catch (parseError) {
+          // Si no se puede parsear como JSON, usar el texto plano
+          errorMsg = "Error del servidor: " + response.status + " " + response.statusText;
         }
         throw new Error(errorMsg);
       }
@@ -115,6 +116,7 @@ export default function RegistroUsuario() {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Registro de Usuario</h1>
                 <p className="text-sm text-gray-600">Panel de Administración - Gestión de Usuarios</p>
+
               </div>
             </div>
           </div>

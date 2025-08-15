@@ -6,6 +6,7 @@ import com.example.integradora_trackontract.modules.Password_Resets.model.Passwo
 import com.example.integradora_trackontract.modules.Roles.model.Roles;
 import com.example.integradora_trackontract.modules.User_Contracts.model.User_Contracts;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,10 +53,13 @@ public class User {
     @Column(name = "login_attempts", columnDefinition = "INT DEFAULT 0")
     private int login_attempts;
 
+    @Column(name = "locked_until")
+    private LocalDateTime locked_until;
+
     public User() {
     }
 
-    public User(Long id, String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
+    public User(Long id, String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, LocalDateTime locked_until, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
         this.id = id;
         this.name = name;
         this.lastName = lastName;
@@ -66,6 +70,7 @@ public class User {
         this.created_at = created_at;
         this.updated_at = updated_at;
         this.login_attempts = login_attempts;
+        this.locked_until = locked_until;
         this.tokens = tokens;
         this.audit_logs = audit_logs;
         this.password_resets = password_resets;
@@ -73,7 +78,7 @@ public class User {
         this.rol_id = rol_id;
     }
 
-    public User(String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
+    public User(String name, String lastName, String email, String phoneNumber, String password, boolean status, LocalDateTime created_at, LocalDateTime updated_at, int login_attempts, LocalDateTime locked_until, List<Token> tokens, List<Audit_Logs> audit_logs, List<Password_Resets> password_resets, List<User_Contracts> user_contracts, Roles rol_id) {
         this.name = name;
         this.lastName = lastName;
         this.email = email;
@@ -83,6 +88,7 @@ public class User {
         this.created_at = created_at;
         this.updated_at = updated_at;
         this.login_attempts = login_attempts;
+        this.locked_until = locked_until;
         this.tokens = tokens;
         this.audit_logs = audit_logs;
         this.password_resets = password_resets;
@@ -170,6 +176,18 @@ public class User {
         this.login_attempts = login_attempts;
     }
 
+    public LocalDateTime getLocked_until() { return locked_until; }
+    public void setLocked_until(LocalDateTime locked_until) { this.locked_until = locked_until; }
+
+    public Roles getRol_id() {
+        return rol_id;
+    }
+
+    public void setRol_id(Roles rol_id) {
+        this.rol_id = rol_id;
+    }
+
+    // Getters y setters para las relaciones
     public List<Token> getTokens() {
         return tokens;
     }
@@ -202,27 +220,24 @@ public class User {
         this.user_contracts = user_contracts;
     }
 
-    public Roles getRol_id() {
-        return rol_id;
-    }
-
-    public void setRol_id(Roles rol_id) {
-        this.rol_id = rol_id;
-    }
-
+    // Relaciones JPA
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Token> tokens;
 
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Audit_Logs> audit_logs;
 
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Password_Resets> password_resets;
 
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<User_Contracts> user_contracts;
 
     @ManyToOne
-    @JsonIgnore
+    @JoinColumn(name = "rol_id")
     private Roles rol_id;
 }

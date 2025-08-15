@@ -68,7 +68,7 @@ public class AdminInitializer implements ApplicationListener<ContextRefreshedEve
 
     private void createUserIfNotExists(String email, String name, String lastName, String phone, String rawPassword, String roleName, String roleDesc) {
         if (userRepository.findByEmail(email).isPresent()) {
-            System.out.println("Usuario ya existe: " + email);
+            // Usuario ya existe
             return;
         }
 
@@ -93,6 +93,6 @@ public class AdminInitializer implements ApplicationListener<ContextRefreshedEve
         user.setRol_id(role);
 
         userRepository.save(user);
-        System.out.println("Usuario creado: " + email);
+        // Usuario creado exitosamente
     }
 }

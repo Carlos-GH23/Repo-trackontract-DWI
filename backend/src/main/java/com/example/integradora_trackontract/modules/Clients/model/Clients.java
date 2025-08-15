@@ -1,6 +1,7 @@
 package com.example.integradora_trackontract.modules.Clients.model;
 
 import com.example.integradora_trackontract.modules.Contracts.model.Contracts;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -47,6 +48,7 @@ public class Clients {
 
 
     @OneToMany(mappedBy = "client_id", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Contracts> contracts;
 
     public Clients() {
